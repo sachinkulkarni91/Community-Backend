@@ -37,7 +37,8 @@ const allowedOrigins = [
   'http://localhost:5174',    // Vite alternative port
   'http://localhost:5175',    // Vite alternative port
   'http://localhost:3001',    // Local admin
-  'https://community-admin-kpmg-portal.vercel.app', // Production admin on Vercel
+  'https://community-admin-kpmg-portal.vercel.app', // Production admin
+  'https://community-consumer.vercel.app'           // Production consumer
 ].filter(Boolean);
 
 app.use(cors({
@@ -58,7 +59,7 @@ app.use(middleware.requestLogger)
 app.use('/', healthRouter)
 
 // Public landing page
-app.use('/community/join', inviteLandingRouter)
+app.use('/community/redirect', inviteLandingRouter)
 
 app.use(middleware.tokenExtractor)
 app.use(middleware.userExtractor)

@@ -20,11 +20,9 @@ inviteLandingRouter.get('/', async (req, res) => {
 
   const FE = config.FRONTEND_URL;
   if (req.user) {
-    return res.json({ redirectUrl: `${FE}/community/join/${invite.community}` });
+    return res.redirect(`${FE}/community/join/${invite.community}`);
   }
-  return res.json({
-    redirectUrl: `${FE}/login?return_to=${encodeURIComponent(`/community/join/${invite.community}`)}`
-  });
+  return res.redirect(`${FE}/login?return_to=${encodeURIComponent(`/community/join/${invite.community}`)}`);
 });
 
 module.exports = inviteLandingRouter;
