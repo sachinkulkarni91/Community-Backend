@@ -7,6 +7,7 @@ const InviteSchema = new Schema({
   community: { type: Schema.Types.ObjectId, ref: 'Community', required: true, index: true },
   tokenHash: { type: String, required: true, unique: true },
   maxUses: { type: Number, default: null },
+  uses: { type: Number, default: 0 },
   revoked: { type: Boolean, default: false, index: true },
   link: { type: String, required: true }
 }, { timestamps: true });

@@ -61,6 +61,7 @@ app.use('/', healthRouter)
 
 // Public landing page
 app.use('/community/redirect', inviteLandingRouter)
+app.use('/community/redirect/', inviteLandingRouter)  // Handle trailing slash
 
 app.use(middleware.tokenExtractor)
 app.use(middleware.userExtractor)
