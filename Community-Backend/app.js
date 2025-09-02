@@ -29,19 +29,7 @@ mongoose.connect(config.MONGO_URI)
     console.error('❌ MongoDB connection failed:', error.message);
   });
 
-const allowedOrigins = [
-  config.FRONTEND_URL,
-  config.ADMIN_URL,
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  'http://localhost:3001',
-  'https://community-admin-kpmg-portal.vercel.app',
-  'https://community-consumer.vercel.app',
-  /^https:\/\/community-consumer.*\.vercel\.app$/,  // Regex for preview deployments
-  /^https:\/\/.*\.vercel\.app$/                     // All Vercel domains (temporary)
-];
+const allowedOrigins = '*';
 
 app.use(cors({
   origin: function (origin, callback) {
