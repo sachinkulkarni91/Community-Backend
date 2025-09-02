@@ -30,18 +30,18 @@ mongoose.connect(config.MONGO_URI)
   });
 
 const allowedOrigins = [
-  config.FRONTEND_URL,        // e.g. https://app.example.com
-  config.ADMIN_URL,           // e.g. https://admin.example.com
-  'http://localhost:3000',    // Local development frontend
-  'http://localhost:5173',    // Vite default port
-  'http://localhost:5174',    // Vite alternative port
-  'http://localhost:5175',    // Vite alternative port
-  'http://localhost:3001',    // Local admin
-  'https://community-admin-kpmg-portal.vercel.app', // Production admin
-  'https://community-consumer.vercel.app' ,
-  "https://community-admin-kpmg-portal-huw832lwa.vercel.app"   ,
-  '*'      // Production consumer
-].filter(Boolean);
+  config.FRONTEND_URL,
+  config.ADMIN_URL,
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://localhost:3001',
+  'https://community-admin-kpmg-portal.vercel.app',
+  'https://community-consumer.vercel.app',
+  /^https:\/\/community-consumer.*\.vercel\.app$/,  // Regex for preview deployments
+  /^https:\/\/.*\.vercel\.app$/                     // All Vercel domains (temporary)
+];
 
 app.use(cors({
   origin: function (origin, callback) {
