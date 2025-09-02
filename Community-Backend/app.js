@@ -37,6 +37,7 @@ const allowedOrigins = [
   'http://localhost:5174',    // Vite alternative port
   'http://localhost:5175',    // Vite alternative port
   'http://localhost:3001',    // Local admin
+  'https://community-admin-kpmg-portal.vercel.app', // Production admin on Vercel
 ].filter(Boolean);
 
 app.use(cors({
