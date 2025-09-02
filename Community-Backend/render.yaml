@@ -3,7 +3,7 @@ services:
     name: community-backend
     env: node
     plan: free  # Change to 'starter' or higher for production
-    rootDir: Community-Backend
+    rootDir: Community-Backend/Community-Backend
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /
