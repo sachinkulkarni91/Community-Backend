@@ -182,6 +182,59 @@ communityRouter.put('/:id/join', readInviteOptional, async (req, res) => {
   });
 });
 
+// POST /api/communities/:id/join (same as PUT for frontend compatibility)
+communityRouter.post('/:id/join', readInviteOptional, async (req, res) => {
+  const userId = req.user._id;
+  let communityId = req.params.id;
+  communityId = communityId.trim();
+  console.log('communityId:', communityId);
+
+  const community = await Community.findById(communityId);
+  console.log('community', community)
+  if (!community) return res.status(404).json({ error: 'Community not found' });
+
+  if (!req.invite || req.invite.community.toString() !== communityId) {
+    return res.status(403).json({ error: 'Invite required' });
+  }
+
+  // idempotent join (ideally in a transaction)
+  const session = await Community.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await Community.updateOne(
+        { _id: communityId },
+        { $addToSet: { members: userId } },
+        { session }
+      );
+      await User.updateOne(
+        { _id: userId },
+        { $addToSet: { joinedCommunities: communityId } },
+        { session }
+      );
+
+      // consume invite if present & limited
+      if (req.invite && req.invite.maxUses != null) {
+        req.invite.uses += 1;
+        await req.invite.save({ session });
+      }
+    });
+  } finally {
+    session.endSession();
+  }
+
+  // clear one-time cookie whether newly joined or already a member
+  res.clearCookie('invite_token', { path: '/' });
+
+  // return lean community (avoid __v, _id)
+  const updated = await Community.findById(communityId).lean();
+  return res.json({
+    ...updated,
+    id: updated._id.toString(),
+    _id: undefined,
+    __v: undefined
+  });
+});
+
 // Change the profile photo of a community
 communityRouter.put('/:id/image', isAdmin, upload.single('image'), async (req, res) => {
   const communityId = req.params.id;
