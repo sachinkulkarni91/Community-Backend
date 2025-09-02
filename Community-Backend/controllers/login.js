@@ -25,12 +25,10 @@ loginRouter.post('/', async (req, res) => {
   const validPass = user ? await bcrypt.compare(password, user.passwordHash) : false
   
   if (!user || !validPass) return res.status(401).json({error: "Invalid username, email or password"})
-    if (user.firstLogin) {
-      return res.json({message: "Please complete your first login"})
-    }
-
+  
+  // Always create token and set cookie, but indicate if first login is needed
   const userForToken = {
-    username,
+    username: user.username,
     id: user._id
   }
 
@@ -49,7 +47,13 @@ loginRouter.post('/', async (req, res) => {
     maxAge: 60 * 60 * 1000
   });
 
-  res.status(200).send(user)
+  // Send user data with firstLogin flag
+  const userResponse = {
+    ...user.toJSON(),
+    firstLogin: user.firstLogin
+  };
+
+  res.status(200).send(userResponse)
 
 })
 
@@ -66,8 +70,10 @@ loginRouter.post('/logout', (req, res) => {
 // handle temporary user transformation
 loginRouter.post('/temp', async (req, res) => {
   const {email, name, username, password} = req.body
+  console.log('🔄 Temp login attempt:', { email, name, username, password: '***' });
 
   let user = await User.findOne({email})
+  console.log('👤 Found user:', user ? { id: user._id, email: user.email, username: user.username, firstLogin: user.firstLogin } : 'not found');
   
   if (!user) return res.status(401).json({error: "Invalid email"})
   if (user.firstLogin === false) return res.status(401).json({error: "You have already completed your first login"})
@@ -85,6 +91,7 @@ loginRouter.post('/temp', async (req, res) => {
   user.role = "user"
 
   const savedUser = await user.save();
+  console.log('✅ User updated:', { id: savedUser._id, email: savedUser.email, username: savedUser.username, name: savedUser.name, firstLogin: savedUser.firstLogin });
 
   const userForToken = {
     username: savedUser.username,

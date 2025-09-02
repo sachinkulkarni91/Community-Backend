@@ -66,7 +66,14 @@ inviteRouter.post('/send', async (req, res) => {
 
   // Send email to user with nodemailer
   if (!user) {
-    user = await User.create({ email, username, passwordHash, provider: "local", role: "user", });
+    user = await User.create({ 
+      email, 
+      username, 
+      passwordHash, 
+      provider: "local", 
+      role: "user",
+      firstLogin: true
+    });
     
     const mailOptions = {
       from: config.EMAIL_USER,
