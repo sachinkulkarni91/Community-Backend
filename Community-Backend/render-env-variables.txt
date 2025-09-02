@@ -1,24 +1,27 @@
 # Environment Variables for Render Deployment
-# Copy these to Render's Environment Variables section
+# IMPORTANT: Set these manually in Render's Dashboard -> Environment Variables
+# DO NOT commit actual secret values to Git!
 
 PORT=10000
 NODE_ENV=production
 MONGO_URI=your_mongodb_connection_string
+TEST_MONGO_URI=your_mongodb_connection_string
+SECRET=your_jwt_secret_key
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GOOGLE_CALLBACK_URL=https://your-app-name.onrender.com/auth/google/callback
-SECRET=your_jwt_secret_key
-FRONTEND_URL=your_frontend_url
-ADMIN_URL=your_admin_url
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 SENDGRID_API_KEY=your_sendgrid_api_key
 EMAIL_USER=your_email_user
 EMAIL_PASS=your_email_password
+FRONTEND_URL=https://your-frontend-app.onrender.com
+ADMIN_URL=https://your-admin-app.onrender.com
 
-# Notes:
-# - PORT will be automatically set by Render (usually 10000)
-# - Replace all "your_*" values with your actual credentials
-# - Update GOOGLE_CALLBACK_URL with your actual Render app URL
-# - Make sure FRONTEND_URL points to your deployed frontend
+# Instructions:
+# 1. Go to your Render service dashboard
+# 2. Navigate to Environment Variables section
+# 3. Add each variable above with your actual values
+# 4. Update GOOGLE_CALLBACK_URL with your actual Render app URL
+# 5. Update FRONTEND_URL and ADMIN_URL with your deployed app URLs

@@ -7,8 +7,5 @@ services:
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
+    # Environment variables should be set in Render dashboard for security
+    # Do not include sensitive values like API keys, secrets, etc. in this file
