@@ -5,6 +5,16 @@ const config = require('../utils/config')
 const jwt = require('jsonwebtoken')
 const isAdmin = require('../utils/isAdmin');
 
+// handle GET request to signup page (for direct access)
+signupRouter.get('/', (req, res) => {
+  // If this is an API request, return status
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    return res.status(200).json({ message: 'Signup endpoint ready' });
+  }
+  // Otherwise redirect to frontend signup page
+  res.redirect(`${config.FRONTEND_URL}/signup`);
+});
+
 // Handle regular user signup
 signupRouter.post('', async (req, res, next) => {
 

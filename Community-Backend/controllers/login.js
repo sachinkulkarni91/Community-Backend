@@ -5,6 +5,16 @@ const User = require('../models/user');
 const { error } = require('../utils/logger');
 const  config = require('../utils/config');
 
+// handle GET request to login page (for direct access)
+loginRouter.get('/', (req, res) => {
+  // If this is an API request, return status
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    return res.status(200).json({ message: 'Login endpoint ready' });
+  }
+  // Otherwise redirect to frontend login page
+  res.redirect(`${config.FRONTEND_URL}/login`);
+});
+
 // handle login
 loginRouter.post('/', async (req, res) => {
   const {username, password} = req.body
