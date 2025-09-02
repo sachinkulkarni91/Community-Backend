@@ -6,6 +6,7 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const config = require('../utils/config');
 const nodemailer = require('nodemailer');
+const { findValidInviteByRawToken } = require('../utils/parseInvite');
 
 // Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -23,6 +24,38 @@ const getRandomString = (length = 16) => {
   return Array.from(array, (x) => chars[x % chars.length]).join("");
 }
 
+
+// GET /api/invites/info - Get invite information from token
+inviteRouter.get('/info', async (req, res) => {
+  const raw = req.cookies?.invite_token;
+  if (!raw) {
+    return res.status(400).json({ error: 'No invite token found' });
+  }
+
+  try {
+    const invite = await findValidInviteByRawToken(raw);
+    if (!invite) {
+      return res.status(404).json({ error: 'Invalid or expired invite' });
+    }
+
+    // Find users that were created for this community and have firstLogin = true
+    // These are the users that were invited but haven't completed signup yet
+    const invitedUsers = await User.find({ 
+      firstLogin: true,
+      // We don't directly link users to invites, so we'll return the invite info
+      // The frontend will need to let the user enter their email
+    });
+
+    res.json({ 
+      communityId: invite.community,
+      hasValidInvite: true,
+      message: 'Please enter the email address that received the invite'
+    });
+  } catch (error) {
+    console.error('Error getting invite info:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // GET /api/invites/:id
 inviteRouter.get('/:id', async (req, res) => {

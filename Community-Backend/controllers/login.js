@@ -67,6 +67,33 @@ loginRouter.post('/logout', (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
+// Check if email was invited (validation endpoint)
+loginRouter.post('/check-invite-email', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ email, firstLogin: true });
+    
+    if (!user) {
+      return res.status(400).json({ 
+        error: "This email address was not invited or has already completed signup. Please check the email address or contact your administrator." 
+      });
+    }
+
+    return res.status(200).json({ 
+      message: "Email is valid for invite signup",
+      canProceed: true 
+    });
+  } catch (error) {
+    console.error('Error checking invite email:', error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // handle temporary user transformation
 loginRouter.post('/temp', async (req, res) => {
   const {email, name, username, password} = req.body
@@ -75,8 +102,8 @@ loginRouter.post('/temp', async (req, res) => {
   let user = await User.findOne({email})
   console.log('👤 Found user:', user ? { id: user._id, email: user.email, username: user.username, firstLogin: user.firstLogin } : 'not found');
   
-  if (!user) return res.status(401).json({error: "Invalid email"})
-  if (user.firstLogin === false) return res.status(401).json({error: "You have already completed your first login"})
+  if (!user) return res.status(401).json({error: "This email address was not invited or has already completed signup. Please check the email address or contact your administrator."})
+  if (user.firstLogin === false) return res.status(401).json({error: "This account has already been activated. Please try logging in instead."})
 
   const otherUser = await User.findOne({ username })
   if (otherUser) return res.status(400).json({error: "Username already taken"})
