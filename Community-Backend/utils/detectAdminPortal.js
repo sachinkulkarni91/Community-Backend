@@ -5,7 +5,7 @@ const detectAdminPortal = (req, res, next) => {
   const adminPortals = [
     'https://community-admin-kpmg-portal.vercel.app',
     'https://community-admin-5dm3.vercel.app',
-    'http://localhost:3001' // Local admin development
+    'http://localhost:3002' // Local admin development - changed from 3001 to 3002
   ];
   
   // If request is from admin portal, mark as admin request
