@@ -3,9 +3,6 @@ services:
     name: community-backend
     env: node
     plan: free  # Change to 'starter' or higher for production
-    rootDir: Community-Backend/Community-Backend
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /
-    # Environment variables should be set in Render dashboard for security
-    # Do not include sensitive values like API keys, secrets, etc. in this file
