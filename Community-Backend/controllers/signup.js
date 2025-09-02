@@ -49,8 +49,8 @@ signupRouter.post('', async (req, res, next) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'None' : 'Lax',
+      secure: true,
+      sameSite: 'None',
       maxAge: 60 * 60 * 1000
     });
     res.status(201).send({username: savedUser.username, name: savedUser.name, id: savedUser._id, role: savedUser.role})
@@ -143,8 +143,8 @@ signupRouter.post('/super-admin', async (req, res, next) => {
     const isProd = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? 'None' : 'Lax',
+      secure: true,
+      sameSite: 'None',
       maxAge: 60 * 60 * 1000
     });
     

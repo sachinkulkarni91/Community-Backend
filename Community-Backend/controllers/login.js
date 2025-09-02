@@ -44,11 +44,10 @@ loginRouter.post('/', async (req, res) => {
 
   res.cookie('token', token, {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'None' : 'Lax',
+    secure: true,  // Always secure since we're using HTTPS
+    sameSite: 'None',  // Required for cross-origin requests
     maxAge: 60 * 60 * 1000
   });
-
 
   res.status(200).send(user)
 
@@ -58,7 +57,7 @@ loginRouter.post('/', async (req, res) => {
 loginRouter.post('/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     sameSite: 'None',
   });
   res.status(200).json({ message: 'Logged out successfully' });
@@ -102,11 +101,10 @@ loginRouter.post('/temp', async (req, res) => {
 
   res.cookie('token', token, {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'None' : 'Lax',
+    secure: true,
+    sameSite: 'None',
     maxAge: 60 * 60 * 1000
   });
-
 
   res.status(200).send(savedUser)
 })
