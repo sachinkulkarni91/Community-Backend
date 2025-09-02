@@ -1,0 +1,149 @@
+###
+GET http://localhost:3003/api/users
+
+###
+POST http://localhost:3003/auth/signup HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "speddsnsdsd",
+  "name": "ooo ddss",
+  "email": "utajajddsdddksdds12334",
+  "password": "1234"
+}
+
+
+### Get current user's information
+GET http://localhost:3003/api/me
+
+
+###
+POST http://localhost:3003/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123"
+}
+
+
+### Get all communities
+GET http://localhost:3003/api/communities
+Cookie: token={eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkFCQyIsImlkIjoiNjg1ZTliNjc4MjJmNWYyOTg2ODgzOWUyIiwiaWF0IjoxNzUyNTgwMDUxLCJleHAiOjE3NTI1ODM2NTF9.ofU74tEc67Ljpw-ZEe2chGRU6I2r0mQqoES_GrxkE40}
+
+
+### Get a specific community by ID
+GET http://localhost:3003/api/communities/6888a7d44126bf5fb43c90ef
+
+
+### Create a new community
+POST http://localhost:3003/api/communities
+Content-Type: application/json
+
+{
+  "name": "KPMG Main Feed",
+  "description": "The KPMG Main Community",
+  "owner": "6888a7d44126bf5fb43c90ef"
+}
+
+
+### Join a community
+PUT http://localhost:3003/api/communities/{{}}/join
+Cookie: token={{}}
+Content-Type: application/json
+
+{
+  "userId": "{{}}"
+}
+
+
+### Leave a community
+PUT http://localhost:3003/api/communities/{{}}/leave
+Cookie: token={{}}
+Content-Type: application/json
+
+{
+  "userId": "{{}}"
+}
+
+
+
+
+### Create a new space in a community
+POST http://localhost:3003/api/communities/{{communityId}}/spaces
+Cookie: token={{}}
+Content-Type: application/json
+
+{
+  "name": "General Discussion",
+  "type": "chat",  // or "feed"
+  "description": "A place for general community conversations"
+}
+
+### Get all spaces in a community
+GET http://localhost:3003/api/communities/{{communityId}}/spaces
+Cookie: token={{}}
+
+
+### Create a new post with title and long content
+POST http://localhost:3003/api/posts
+Content-Type: application/json
+
+{
+  "title": "Why Community-Driven Innovation Is the Future",
+  "content": "In today’s fast-paced digital world, the power of communities has become more evident than ever. From open-source software to crowd-sourced design, we are witnessing a shift from top-down innovation to collective problem-solving. At KPMG Knitspace, we believe that empowering communities to share, collaborate, and build together isn't just a trend—it's the future. This post explores how creating engaged, trusted spaces can drive genuine impact, spark creativity, and fuel growth at every level.",
+  "author": "685e9b67822f5f29868839e2",       
+  "community": "68763c89d9be5c82be49c37e"
+
+}
+
+### Post 1: Community Collaboration
+POST http://localhost:3003/api/posts
+Content-Type: application/json
+
+{
+  "title": "Building Together: The Power of Shared Goals",
+  "content": "When people come together with a shared vision, the results are remarkable. Communities thrive when members feel heard, valued, and aligned around common goals. At Knitspace, our platform fosters meaningful engagement by encouraging open dialogue, collaborative projects, and inclusive decision-making. It's not just about talking—it's about creating together.",
+  "author": "685e9b67822f5f29868839e2",
+  "community": "68763c89d9be5c82be49c37e"
+}
+
+### Post 2: Engagement Tips
+POST http://localhost:3003/api/posts
+Content-Type: application/json
+
+{
+  "title": "5 Ways to Boost Community Engagement",
+  "content": "Keeping your community active and engaged can be challenging—but it's far from impossible. Try these five techniques: 1) Ask thoughtful questions, 2) Celebrate member milestones, 3) Host regular virtual events, 4) Share exclusive content, and 5) Empower leaders within your group. These strategies help turn passive followers into active contributors.",
+  "author": "685e9b67822f5f29868839e2",
+  "community": "68763c89d9be5c82be49c37e"
+}
+
+### Post 3: Transparency & Trust
+POST http://localhost:3003/api/posts
+Content-Type: application/json
+
+{
+  "title": "Transparency Builds Trust",
+  "content": "Trust is the foundation of any successful community. At Knitspace, we encourage transparency through clear communication, consistent moderation, and open leadership. Whether it’s announcing platform changes or addressing feedback, being transparent helps members feel safe, respected, and loyal.",
+  "author": "685e9b67822f5f29868839e2",
+  "community": "68763c89d9be5c82be49c37e"
+}
+
+### Post 4: Future of Community Platforms
+POST http://localhost:3003/api/posts
+Content-Type: application/json
+
+{
+  "title": "What’s Next for Digital Communities?",
+  "content": "As technology evolves, so does the way we connect. AI-driven moderation, real-time collaboration tools, and immersive experiences are shaping the future of digital communities. Knitspace is committed to staying ahead of the curve, ensuring our users always have the best tools to build, grow, and thrive in a digital-first world.",
+  "author": "685e9b67822f5f29868839e2",
+  "community": "68763c89d9be5c82be49c37e"
+}
+
+
+### Create invite for a community
+GET http://localhost:3003/community/join/?t=cZQ42IEB9h7mMLNUM5M6gjZJCPU_JmzmW5uq9uM9P1g
+Content-Type: application/json
+Cookie: token=YOUR_JWT_TOKEN_HERE
+
