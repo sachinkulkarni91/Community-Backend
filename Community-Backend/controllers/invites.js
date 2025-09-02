@@ -75,7 +75,7 @@ inviteRouter.post('/send', async (req, res) => {
       html: `
         <h2>Welcome to KPMG Community!</h2>
         <p>You've been invited to join our community platform.</p>
-        <p><strong>Your invite link:</strong> <a href="${config.FRONTEND_URL}${invite.link}">Click here to join</a></p>
+        <p><strong>Your invite link:</strong> <a href="${config.BACKEND_URL}${invite.link}">Click here to join</a></p>
         <p><strong>Your temporary password:</strong> <code>${password}</code></p>
         <p>Please use this password to login for the first time, then change it in your profile settings.</p>
         <br>
@@ -88,13 +88,13 @@ inviteRouter.post('/send', async (req, res) => {
       console.log(`✅ Email sent successfully to: ${email}`);
       res.status(200).json({ 
         message: 'User created and invite email sent successfully!',
-        inviteLink: `${config.FRONTEND_URL}${invite.link}`
+        inviteLink: `${config.BACKEND_URL}${invite.link}`
       });
     } catch (error) {
       console.error('❌ Email sending failed:', error);
       res.status(200).json({ 
         message: 'User created but email failed. Please check logs.',
-        inviteLink: `${config.FRONTEND_URL}${invite.link}`,
+        inviteLink: `${config.BACKEND_URL}${invite.link}`,
         tempPassword: password
       });
     }
@@ -109,7 +109,7 @@ inviteRouter.post('/send', async (req, res) => {
     html: `
       <h2>You're invited to join a community!</h2>
       <p>You've been invited to join a new community on our platform.</p>
-      <p><strong>Click here to join:</strong> <a href="${config.FRONTEND_URL}${invite.link}">Join Community</a></p>
+      <p><strong>Click here to join:</strong> <a href="${config.BACKEND_URL}${invite.link}">Join Community</a></p>
       <br>
       <p>Best regards,<br>KPMG Community Team</p>
     `
@@ -120,13 +120,13 @@ inviteRouter.post('/send', async (req, res) => {
     console.log(`✅ Email sent successfully to: ${user.email}`);
     res.status(200).json({ 
       message: 'Invite email sent successfully!',
-      inviteLink: `${config.FRONTEND_URL}${invite.link}`
+      inviteLink: `${config.BACKEND_URL}${invite.link}`
     });
   } catch (error) {
     console.error('❌ Email sending failed:', error);
     res.status(200).json({ 
       message: 'Invite created but email failed. Please check logs.',
-      inviteLink: `${config.FRONTEND_URL}${invite.link}`
+      inviteLink: `${config.BACKEND_URL}${invite.link}`
     });
   }
 
