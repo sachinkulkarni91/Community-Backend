@@ -15,6 +15,7 @@ const healthRouter = require('./controllers/health');
 const inviteLandingRouter = require('./controllers/inviteLink');
 const inviteRouter = require('./controllers/invites');
 const passwordRouter = require('./controllers/forgotpassword');
+const detectAdminPortal = require('./utils/detectAdminPortal');
 
 
 const app = express()
@@ -65,6 +66,7 @@ app.use('/community/redirect/', inviteLandingRouter)  // Handle trailing slash
 
 app.use(middleware.tokenExtractor)
 app.use(middleware.userExtractor)
+app.use(detectAdminPortal)
 
 
 app.use('/auth/forgot-password', passwordRouter)

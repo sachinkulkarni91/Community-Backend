@@ -52,44 +52,89 @@ meRouter.get('/posts', async (req, res) => {
   res.json(posts)
 })
 
-// Edit a user
+// Edit a user (update email and/or password)
 meRouter.post('/', async (req, res) => {
   try {
     const userID = req.user.id;
-    const { email, password } = req.body;
+    const { email, password, newPassword } = req.body;
 
     const user = await User.findById(userID);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (email && email !== '') {
+    // Handle email update
+    if (email && email !== '' && email !== user.email) {
       const otherUser = await User.findOne({ email });
       if (otherUser && otherUser.id !== userID) {
         return res.status(400).json({
           error: 'A user already exists with this email',
         });
       }
+      user.email = email;
     }
 
-    let passwordHash = null;
-    if (password && password !== '') {
-      if (password.length < 3) {
+    // Handle password update
+    const passwordToUpdate = newPassword || password; // Support both 'password' and 'newPassword' fields
+    if (passwordToUpdate && passwordToUpdate !== '') {
+      if (passwordToUpdate.length < 3) {
         return res.status(400).json({
-          error: `${password} is less than the minimum length of 3 characters`,
+          error: `Password must be at least 3 characters long`,
         });
       }
       const saltRounds = 10;
-      passwordHash = await bcrypt.hash(password, saltRounds);
+      const passwordHash = await bcrypt.hash(passwordToUpdate, saltRounds);
+      user.passwordHash = passwordHash;
     }
-
-    if (email && email !== '') user.email = email;
-    if (passwordHash) user.passwordHash = passwordHash;
 
     const savedUser = await user.save();
     const populatedUser = await savedUser.populate('joinedCommunities', 'name _id');
 
     const { passwordHash: _, ...userWithoutPassword } = populatedUser.toObject();
-    res.json(userWithoutPassword);
+    
+    res.json({
+      ...userWithoutPassword,
+      message: 'Profile updated successfully'
+    });
   } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Dedicated password change endpoint
+meRouter.post('/change-password', async (req, res) => {
+  try {
+    const userID = req.user.id;
+    const { newPassword, confirmPassword } = req.body;
+
+    if (!newPassword || newPassword === '') {
+      return res.status(400).json({ error: 'New password is required' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'New password and confirmation do not match' });
+    }
+
+    if (newPassword.length < 3) {
+      return res.status(400).json({
+        error: 'Password must be at least 3 characters long',
+      });
+    }
+
+    const user = await User.findById(userID);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+    user.passwordHash = passwordHash;
+
+    await user.save();
+
+    res.json({ 
+      message: 'Password changed successfully',
+      email: user.email 
+    });
+  } catch (error) {
+    console.error('Password change error:', error);
     res.status(500).json({ error: error.message });
   }
 });

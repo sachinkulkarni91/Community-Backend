@@ -4,11 +4,23 @@ const Comment = require('../models/comment');
 const Space = require("../models/space");
 const User = require("../models/user");
 
-// GET all posts (only from communities user is a member of)
+// GET all posts (all for admins, only from joined communities for regular users)
 postRouter.get('/', async (req, res) => {
   const userId = req.user._id;
+  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
   
-  // Get user's joined communities
+  if (isUserAdmin) {
+    // Admin can see all posts from all communities
+    const posts = await Post.find({})
+      .populate('author', 'username name profilePhoto')
+      .populate('community', 'name profilePhoto')
+      .populate('comments')
+      .populate('likes', 'username name')
+      .sort({ createdAt: -1 }); // Most recent first
+    return res.json(posts);
+  }
+  
+  // Regular users can only see posts from communities they've joined
   const user = await User.findById(userId).select('joinedCommunities');
   if (!user || !user.joinedCommunities?.length) {
     return res.json([]); // Return empty array if user hasn't joined any communities
@@ -162,16 +174,19 @@ postRouter.post('/:postId/comments', async (req, res) => {
   }
 });
 
-// Get all the posts of a community (only if user is a member)
+// Get all the posts of a community (any community for admins, only joined ones for regular users)
 postRouter.get('/community/:communityId', async (req, res) => {
   const { communityId } = req.params;
   const userId = req.user._id;
+  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
 
   try {
-    // Check if user is a member of this community
-    const user = await User.findById(userId).select('joinedCommunities');
-    if (!user || !user.joinedCommunities.includes(communityId)) {
-      return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+    if (!isUserAdmin) {
+      // Check if regular user is a member of this community
+      const user = await User.findById(userId).select('joinedCommunities');
+      if (!user || !user.joinedCommunities.includes(communityId)) {
+        return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+      }
     }
 
     const posts = await Post.find({ community: communityId })

@@ -10,11 +10,21 @@ const { storage, getOptimizedUrl } = require('../utils/cloudinary');
 const Post = require('../models/post');
 
 
-// Get all communities (only ones user is a member of)
+// Get all communities (all for admins, only joined ones for regular users)
 communityRouter.get('/', async (req, res) => {
   const userId = req.user._id;
+  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
   
-  // Get user's joined communities
+  if (isUserAdmin) {
+    // Admin can see all communities
+    const communities = await Community.find({})
+      .populate('owner', 'username name profilePhoto')
+      .populate('admins', 'username name profilePhoto')
+      .populate('members', 'username name profilePhoto')
+    return res.json(communities);
+  }
+  
+  // Regular users can only see communities they've joined
   const user = await User.findById(userId).select('joinedCommunities');
   if (!user || !user.joinedCommunities?.length) {
     return res.json([]); // Return empty array if user hasn't joined any communities
@@ -27,15 +37,18 @@ communityRouter.get('/', async (req, res) => {
   res.json(communities)
 })
 
-// Get single community (only if user is a member)
+// Get single community (any community for admins, only joined ones for regular users)
 communityRouter.get('/:id', async (req, res) => {
   const userId = req.user._id;
   const communityId = req.params.id;
+  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
   
-  // Check if user is a member of this community
-  const user = await User.findById(userId).select('joinedCommunities');
-  if (!user || !user.joinedCommunities.includes(communityId)) {
-    return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+  if (!isUserAdmin) {
+    // Check if regular user is a member of this community
+    const user = await User.findById(userId).select('joinedCommunities');
+    if (!user || !user.joinedCommunities.includes(communityId)) {
+      return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+    }
   }
   
   const community = await Community.findById(communityId)
@@ -383,16 +396,19 @@ communityRouter.post('/:id/spaces', async (req, res) => {
 
 
 
-// Get all spaces in a community (only if user is a member)
+// Get all spaces in a community (any community for admins, only joined ones for regular users)
 communityRouter.get('/:id/spaces', async (req, res) => {
   const communityId = req.params.id;
   const userId = req.user._id;
+  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
 
   try {
-    // Check if user is a member of this community
-    const user = await User.findById(userId).select('joinedCommunities');
-    if (!user || !user.joinedCommunities.includes(communityId)) {
-      return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+    if (!isUserAdmin) {
+      // Check if regular user is a member of this community
+      const user = await User.findById(userId).select('joinedCommunities');
+      if (!user || !user.joinedCommunities.includes(communityId)) {
+        return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+      }
     }
 
     const spaces = await Space.find({ community: communityId });
