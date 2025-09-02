@@ -10,18 +10,35 @@ const { storage, getOptimizedUrl } = require('../utils/cloudinary');
 const Post = require('../models/post');
 
 
-// Get all communities
+// Get all communities (only ones user is a member of)
 communityRouter.get('/', async (req, res) => {
-  const communities = await Community.find({})
+  const userId = req.user._id;
+  
+  // Get user's joined communities
+  const user = await User.findById(userId).select('joinedCommunities');
+  if (!user || !user.joinedCommunities?.length) {
+    return res.json([]); // Return empty array if user hasn't joined any communities
+  }
+  
+  const communities = await Community.find({ _id: { $in: user.joinedCommunities } })
     .populate('owner', 'username name profilePhoto')
     .populate('admins', 'username name profilePhoto')
     .populate('members', 'username name profilePhoto')
   res.json(communities)
 })
 
-// Get single community
+// Get single community (only if user is a member)
 communityRouter.get('/:id', async (req, res) => {
-  const community = await Community.findById(req.params.id)
+  const userId = req.user._id;
+  const communityId = req.params.id;
+  
+  // Check if user is a member of this community
+  const user = await User.findById(userId).select('joinedCommunities');
+  if (!user || !user.joinedCommunities.includes(communityId)) {
+    return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+  }
+  
+  const community = await Community.findById(communityId)
     .populate('owner', 'username name profilePhoto')
     .populate('admins', 'username name profilePhoto')
     .populate('members', 'username name profilePhoto')
@@ -366,11 +383,18 @@ communityRouter.post('/:id/spaces', async (req, res) => {
 
 
 
-// Get all spaces in a community
+// Get all spaces in a community (only if user is a member)
 communityRouter.get('/:id/spaces', async (req, res) => {
   const communityId = req.params.id;
+  const userId = req.user._id;
 
   try {
+    // Check if user is a member of this community
+    const user = await User.findById(userId).select('joinedCommunities');
+    if (!user || !user.joinedCommunities.includes(communityId)) {
+      return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+    }
+
     const spaces = await Space.find({ community: communityId });
     res.json(spaces);
   } catch (error) {

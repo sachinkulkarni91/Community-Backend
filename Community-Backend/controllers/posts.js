@@ -2,14 +2,25 @@ const postRouter = require("express").Router();
 const Post = require("../models/post");
 const Comment = require('../models/comment');
 const Space = require("../models/space");
+const User = require("../models/user");
 
-// GET all posts
+// GET all posts (only from communities user is a member of)
 postRouter.get('/', async (req, res) => {
-  const posts = await Post.find({})
+  const userId = req.user._id;
+  
+  // Get user's joined communities
+  const user = await User.findById(userId).select('joinedCommunities');
+  if (!user || !user.joinedCommunities?.length) {
+    return res.json([]); // Return empty array if user hasn't joined any communities
+  }
+  
+  // Only fetch posts from communities the user is a member of
+  const posts = await Post.find({ community: { $in: user.joinedCommunities } })
     .populate('author', 'username name profilePhoto')
     .populate('community', 'name profilePhoto')
     .populate('comments')
-    .populate('likes', 'username name');
+    .populate('likes', 'username name')
+    .sort({ createdAt: -1 }); // Most recent first
     
   res.json(posts);
 });
@@ -151,23 +162,29 @@ postRouter.post('/:postId/comments', async (req, res) => {
   }
 });
 
-// Get all the posts of a community
-
+// Get all the posts of a community (only if user is a member)
 postRouter.get('/community/:communityId', async (req, res) => {
   const { communityId } = req.params;
+  const userId = req.user._id;
 
   try {
+    // Check if user is a member of this community
+    const user = await User.findById(userId).select('joinedCommunities');
+    if (!user || !user.joinedCommunities.includes(communityId)) {
+      return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
+    }
+
     const posts = await Post.find({ community: communityId })
       .populate('author', 'username name profilePhoto')
       .populate('community', 'name profilePhoto')
       .populate('comments')
-      .populate('likes', 'username name');
+      .populate('likes', 'username name')
+      .sort({ createdAt: -1 }); // Most recent first
 
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-
 });
 
 module.exports = postRouter;
