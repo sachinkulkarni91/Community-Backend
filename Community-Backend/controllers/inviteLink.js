@@ -27,13 +27,18 @@ inviteLandingRouter.get('/', async (req, res) => {
   
   if (req.user) {
     // If user is already logged in, redirect to appropriate community
-    const communityId = invitedUser ? invitedUser.communities[0] : invite.community;
+    const communityId = invitedUser && invitedUser.communities && invitedUser.communities.length > 0 
+      ? invitedUser.communities[0] 
+      : invite?.community;
     return res.redirect(`${FE}/feed?invite=${communityId}`);
   }
   
   // For user-specific invites, redirect to signup with pre-filled data
   if (invitedUser) {
-    return res.redirect(`${FE}/signup?invite=${invitedUser.communities[0]}`);
+    const communityId = invitedUser.communities && invitedUser.communities.length > 0 
+      ? invitedUser.communities[0] 
+      : '';
+    return res.redirect(`${FE}/signup?invite=${communityId}`);
   }
   
   // For community invites, redirect to login

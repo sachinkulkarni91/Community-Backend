@@ -138,7 +138,8 @@ inviteRouter.post('/send', async (req, res) => {
       provider: "local", 
       role: "user",
       firstLogin: true,
-      inviteTokenHash: tokenHash // Store the invite token hash with the user
+      inviteTokenHash: tokenHash, // Store the invite token hash with the user
+      communities: [communityId] // Add the community to the user
     });
     
     const mailOptions = {
@@ -176,6 +177,12 @@ inviteRouter.post('/send', async (req, res) => {
 
   // Handle existing user - update their invite token
   user.inviteTokenHash = tokenHash;
+  
+  // Add user to community if not already a member
+  if (!user.communities.includes(communityId)) {
+    user.communities.push(communityId);
+  }
+  
   await user.save();
 
   // Send invite email to existing user
