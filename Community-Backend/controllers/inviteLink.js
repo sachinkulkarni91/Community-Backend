@@ -12,7 +12,7 @@ inviteLandingRouter.get('/', async (req, res) => {
 
   // First check if it's a user-specific invite token
   const invitedUser = await findUserByInviteToken(raw);
-  console.log('👤 Found invited user:', invitedUser ? { id: invitedUser._id, email: invitedUser.email, communities: invitedUser.communities, firstLogin: invitedUser.firstLogin } : 'null');
+  console.log('👤 Found invited user:', invitedUser ? { id: invitedUser._id, email: invitedUser.email, joinedCommunities: invitedUser.joinedCommunities, firstLogin: invitedUser.firstLogin } : 'null');
   
   // Also check if it's a community invite token
   const invite = await findValidInviteByRawToken(raw);
@@ -35,17 +35,41 @@ inviteLandingRouter.get('/', async (req, res) => {
   if (req.user) {
     console.log('👤 User already logged in, redirecting to feed');
     // If user is already logged in, redirect to appropriate community
-    const communityId = invitedUser && invitedUser.communities && invitedUser.communities.length > 0 
-      ? invitedUser.communities[0] 
+    const communityId = invitedUser && invitedUser.joinedCommunities && invitedUser.joinedCommunities.length > 0 
+      ? invitedUser.joinedCommunities[0] 
       : invite?.community;
     return res.redirect(`${FE}/feed?invite=${communityId}`);
   }
   
   // For user-specific invites
   if (invitedUser) {
-    const communityId = invitedUser.communities && invitedUser.communities.length > 0 
-      ? invitedUser.communities[0] 
-      : '';
+    let communityId = '';
+    
+    // Try to get community ID from user's joinedCommunities first
+    if (invitedUser.joinedCommunities && invitedUser.joinedCommunities.length > 0) {
+      communityId = invitedUser.joinedCommunities[0];
+      console.log('🏘️ Got community ID from user joinedCommunities:', communityId);
+    } else {
+      // Fallback: Try to get community ID from the general invite token
+      console.log('⚠️ User joinedCommunities undefined, trying fallback...');
+      const fallbackInvite = await findValidInviteByRawToken(raw);
+      if (fallbackInvite && fallbackInvite.community) {
+        communityId = fallbackInvite.community;
+        console.log('🔄 Got community ID from fallback invite:', communityId);
+        
+        // Also fix the user's joinedCommunities array while we're at it
+        if (!invitedUser.joinedCommunities) {
+          invitedUser.joinedCommunities = [];
+        }
+        if (!invitedUser.joinedCommunities.includes(communityId)) {
+          invitedUser.joinedCommunities.push(communityId);
+          await invitedUser.save();
+          console.log('🔧 Fixed user joinedCommunities array:', invitedUser.joinedCommunities);
+        }
+      } else {
+        console.log('❌ Could not find community ID from either source');
+      }
+    }
     
     // Check if this user was created through invitation (firstLogin = true)
     // or if they're an existing user (firstLogin = false or undefined)

@@ -58,7 +58,7 @@ inviteRouter.get('/info', async (req, res) => {
         invitedEmail: invitedUser.email,
         invitedName: invitedUser.name || '',
         invitedUsername: invitedUser.username || '',
-        communities: invitedUser.communities,
+        joinedCommunities: invitedUser.joinedCommunities,
         message: 'User-specific invite found'
       });
     }
@@ -155,7 +155,7 @@ inviteRouter.post('/send', async (req, res) => {
       role: "user",
       firstLogin: true,
       inviteTokenHash: tokenHash, // Store the invite token hash with the user
-      communities: [communityId] // Add the community to the user
+      joinedCommunities: [communityId] // Add the community to the user
     });
     
     const mailOptions = {
@@ -194,14 +194,14 @@ inviteRouter.post('/send', async (req, res) => {
   // Handle existing user - update their invite token
   user.inviteTokenHash = tokenHash;
   
-  // Initialize communities array if it doesn't exist
-  if (!user.communities) {
-    user.communities = [];
+  // Initialize joinedCommunities array if it doesn't exist
+  if (!user.joinedCommunities) {
+    user.joinedCommunities = [];
   }
   
   // Add user to community if not already a member
-  if (!user.communities.includes(communityId)) {
-    user.communities.push(communityId);
+  if (!user.joinedCommunities.includes(communityId)) {
+    user.joinedCommunities.push(communityId);
   }
   
   await user.save();

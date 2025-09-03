@@ -36,22 +36,22 @@ loginRouter.post('/', async (req, res) => {
     try {
       // For user-specific invites, check if the invited user matches the current user
       const invitedUser = await findUserByInviteToken(inviteToken);
-      console.log('👤 Found invited user:', invitedUser ? { id: invitedUser._id, email: invitedUser.email, communities: invitedUser.communities } : 'null');
+      console.log('👤 Found invited user:', invitedUser ? { id: invitedUser._id, email: invitedUser.email, joinedCommunities: invitedUser.joinedCommunities } : 'null');
       
       if (invitedUser && invitedUser._id.toString() === user._id.toString()) {
         console.log('✅ User-specific invite match');
-        // User-specific invite - communities should already be assigned, but ensure they're there
-        if (invitedUser.communities && invitedUser.communities.length > 0) {
-          console.log('🏘️ Adding communities to user:', invitedUser.communities);
-          // Make sure all invited communities are in the user's communities
-          for (const communityId of invitedUser.communities) {
-            if (!user.communities.includes(communityId)) {
-              user.communities.push(communityId);
+        // User-specific invite - joinedCommunities should already be assigned, but ensure they're there
+        if (invitedUser.joinedCommunities && invitedUser.joinedCommunities.length > 0) {
+          console.log('🏘️ Adding communities to user:', invitedUser.joinedCommunities);
+          // Make sure all invited communities are in the user's joinedCommunities
+          for (const communityId of invitedUser.joinedCommunities) {
+            if (!user.joinedCommunities.includes(communityId)) {
+              user.joinedCommunities.push(communityId);
               console.log('➕ Added community:', communityId);
             }
           }
           await user.save();
-          console.log('💾 User saved with communities:', user.communities);
+          console.log('💾 User saved with communities:', user.joinedCommunities);
         }
       } else {
         console.log('🌐 General community invite');
@@ -60,8 +60,8 @@ loginRouter.post('/', async (req, res) => {
         console.log('📧 Found invite data:', inviteData ? { community: inviteData.community } : 'null');
         if (inviteData && inviteData.community) {
           // Add user to community if not already a member
-          if (!user.communities.includes(inviteData.community)) {
-            user.communities.push(inviteData.community);
+          if (!user.joinedCommunities.includes(inviteData.community)) {
+            user.joinedCommunities.push(inviteData.community);
             await user.save();
             console.log('➕ Added user to community:', inviteData.community);
           }

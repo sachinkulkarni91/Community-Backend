@@ -76,7 +76,7 @@ signupRouter.post('/invite', async (req, res, next) => {
       name: savedUser.name,
       id: savedUser._id,
       role: savedUser.role,
-      communities: savedUser.communities
+      joinedCommunities: savedUser.joinedCommunities
     });
     
   } catch (error) {
