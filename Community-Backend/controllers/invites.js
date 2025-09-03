@@ -166,7 +166,7 @@ inviteRouter.post('/send', async (req, res) => {
         <h2>Welcome to KPMG Community, ${name || 'there'}!</h2>
         <p>You've been invited to join our community platform.</p>
         <p><strong>Your invite link:</strong> <a href="${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}">Click here to join</a></p>
-        <p><strong>Your temporary password:</strong> <code>${password}</code></p>
+        <p><strong>Your One Time Password:</strong> <code>${password}</code></p>
         <p>Please use this password to login for the first time, then change it in your profile settings.</p>
         <br>
         <p>Best regards,<br>KPMG Community Team</p>
