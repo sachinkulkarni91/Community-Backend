@@ -32,21 +32,48 @@ loginRouter.post('/', async (req, res) => {
   
   // Check if this is an invite login and user needs to be added to community
   if (inviteType && inviteToken) {
+    console.log('🔍 Processing invite login:', { inviteType, inviteToken: inviteToken.substring(0, 8) + '...' });
     try {
-      const inviteData = await findValidInviteByRawToken(inviteToken);
-      if (inviteData && inviteData.communityId) {
-        // Add user to community if not already a member
-        if (!user.communities.includes(inviteData.communityId)) {
-          user.communities.push(inviteData.communityId);
+      // For user-specific invites, check if the invited user matches the current user
+      const invitedUser = await findUserByInviteToken(inviteToken);
+      console.log('👤 Found invited user:', invitedUser ? { id: invitedUser._id, email: invitedUser.email, communities: invitedUser.communities } : 'null');
+      
+      if (invitedUser && invitedUser._id.toString() === user._id.toString()) {
+        console.log('✅ User-specific invite match');
+        // User-specific invite - communities should already be assigned, but ensure they're there
+        if (invitedUser.communities && invitedUser.communities.length > 0) {
+          console.log('🏘️ Adding communities to user:', invitedUser.communities);
+          // Make sure all invited communities are in the user's communities
+          for (const communityId of invitedUser.communities) {
+            if (!user.communities.includes(communityId)) {
+              user.communities.push(communityId);
+              console.log('➕ Added community:', communityId);
+            }
+          }
           await user.save();
+          console.log('💾 User saved with communities:', user.communities);
         }
-        
-        // Clear invite cookies after successful community assignment
-        res.clearCookie('inviteType');
-        res.clearCookie('inviteToken');
+      } else {
+        console.log('🌐 General community invite');
+        // General community invite
+        const inviteData = await findValidInviteByRawToken(inviteToken);
+        console.log('📧 Found invite data:', inviteData ? { community: inviteData.community } : 'null');
+        if (inviteData && inviteData.community) {
+          // Add user to community if not already a member
+          if (!user.communities.includes(inviteData.community)) {
+            user.communities.push(inviteData.community);
+            await user.save();
+            console.log('➕ Added user to community:', inviteData.community);
+          }
+        }
       }
+      
+      // Clear invite cookies after successful community assignment
+      res.clearCookie('inviteType');
+      res.clearCookie('inviteToken');
+      console.log('🧹 Cleared invite cookies');
     } catch (error) {
-      console.error('Error processing invite during login:', error);
+      console.error('❌ Error processing invite during login:', error);
       // Don't fail login if invite processing fails
     }
   }

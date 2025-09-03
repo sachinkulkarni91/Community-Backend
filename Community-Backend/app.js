@@ -22,12 +22,20 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser());
 
-mongoose.connect(config.MONGO_URI)
+mongoose.connect(config.MONGO_URI, {
+  serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+  connectTimeoutMS: 30000,
+  socketTimeoutMS: 30000,
+  maxPoolSize: 10,
+  retryWrites: true,
+  retryReads: true
+})
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas successfully!');
   })
   .catch((error) => {
     console.error('❌ MongoDB connection failed:', error.message);
+    console.error('Full error:', error);
   });
 
 // Allow all origins (useful for development/testing)

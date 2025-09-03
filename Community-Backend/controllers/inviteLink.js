@@ -6,13 +6,17 @@ const inviteLandingRouter = express.Router();
 
 inviteLandingRouter.get('/', async (req, res) => {
   const raw = req.query.t;
+  console.log('🔗 Invite landing accessed with token:', raw ? raw.substring(0, 8) + '...' : 'null');
+  
   if (!raw) return res.status(404).send('Not found');
 
   // First check if it's a user-specific invite token
   const invitedUser = await findUserByInviteToken(raw);
+  console.log('👤 Found invited user:', invitedUser ? { id: invitedUser._id, email: invitedUser.email, communities: invitedUser.communities, firstLogin: invitedUser.firstLogin } : 'null');
   
   // Also check if it's a community invite token
   const invite = await findValidInviteByRawToken(raw);
+  console.log('📧 Found community invite:', invite ? { community: invite.community } : 'null');
   
   if (!invitedUser && !invite) return res.status(404).send('Not found');
 
@@ -26,8 +30,10 @@ inviteLandingRouter.get('/', async (req, res) => {
   });
 
   const FE = config.FRONTEND_URL;
+  console.log('🏠 Frontend URL:', FE);
   
   if (req.user) {
+    console.log('👤 User already logged in, redirecting to feed');
     // If user is already logged in, redirect to appropriate community
     const communityId = invitedUser && invitedUser.communities && invitedUser.communities.length > 0 
       ? invitedUser.communities[0] 
@@ -44,6 +50,7 @@ inviteLandingRouter.get('/', async (req, res) => {
     // Check if this user was created through invitation (firstLogin = true)
     // or if they're an existing user (firstLogin = false or undefined)
     if (invitedUser.firstLogin === true) {
+      console.log('🆕 New invited user - redirecting to login with user type');
       // New invited user - set invite type and redirect to login
       res.cookie('inviteType', 'user', {
         httpOnly: true,
@@ -52,6 +59,7 @@ inviteLandingRouter.get('/', async (req, res) => {
       });
       return res.redirect(`${FE}/login?invite=${communityId}&type=user`);
     } else {
+      console.log('👥 Existing user - redirecting to login with existing type');
       // Existing user - set invite type and redirect to regular login
       res.cookie('inviteType', 'existing', {
         httpOnly: true,
@@ -62,6 +70,7 @@ inviteLandingRouter.get('/', async (req, res) => {
     }
   }
   
+  console.log('🌐 Community invite - redirecting to login');
   // For community invites, redirect to login
   res.cookie('inviteType', 'community', {
     httpOnly: true,
