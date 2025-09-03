@@ -21,7 +21,7 @@ loginRouter.post('/', async (req, res) => {
   const {username, password} = req.body
   const cookies = req.cookies;
   const inviteType = cookies.inviteType
-  const inviteToken = cookies.inviteToken
+  const inviteToken = cookies.invite_token
 
   let user = await User.findOne({username})
   if (!user) user = await User.findOne({email: username})

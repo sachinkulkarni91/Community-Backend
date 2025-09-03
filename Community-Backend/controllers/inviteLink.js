@@ -23,7 +23,7 @@ inviteLandingRouter.get('/', async (req, res) => {
   const isProd = process.env.NODE_ENV === 'production';
   
   // Set invite cookies for later processing
-  res.cookie('inviteToken', raw, {
+  res.cookie('invite_token', raw, {
     httpOnly: true,
     secure: isProd,                 
     sameSite: isProd ? 'None' : 'Lax', 
