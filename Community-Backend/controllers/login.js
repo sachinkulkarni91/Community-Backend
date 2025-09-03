@@ -4,6 +4,7 @@ const loginRouter = require('express').Router()
 const User = require('../models/user');
 const { error } = require('../utils/logger');
 const  config = require('../utils/config');
+const { findUserByInviteToken, findValidInviteByRawToken } = require('../utils/parseInvite');
 
 // handle GET request to login page (for direct access)
 loginRouter.get('/', (req, res) => {
@@ -18,6 +19,9 @@ loginRouter.get('/', (req, res) => {
 // handle login
 loginRouter.post('/', async (req, res) => {
   const {username, password} = req.body
+  const cookies = req.cookies;
+  const inviteType = cookies.inviteType
+  const inviteToken = cookies.inviteToken
 
   let user = await User.findOne({username})
   if (!user) user = await User.findOne({email: username})
@@ -25,6 +29,27 @@ loginRouter.post('/', async (req, res) => {
   const validPass = user ? await bcrypt.compare(password, user.passwordHash) : false
   
   if (!user || !validPass) return res.status(401).json({error: "Invalid username, email or password"})
+  
+  // Check if this is an invite login and user needs to be added to community
+  if (inviteType && inviteToken) {
+    try {
+      const inviteData = await findValidInviteByRawToken(inviteToken);
+      if (inviteData && inviteData.communityId) {
+        // Add user to community if not already a member
+        if (!user.communities.includes(inviteData.communityId)) {
+          user.communities.push(inviteData.communityId);
+          await user.save();
+        }
+        
+        // Clear invite cookies after successful community assignment
+        res.clearCookie('inviteType');
+        res.clearCookie('inviteToken');
+      }
+    } catch (error) {
+      console.error('Error processing invite during login:', error);
+      // Don't fail login if invite processing fails
+    }
+  }
   
   // Always create token and set cookie, but indicate if first login is needed
   const userForToken = {

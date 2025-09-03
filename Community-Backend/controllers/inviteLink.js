@@ -17,7 +17,9 @@ inviteLandingRouter.get('/', async (req, res) => {
   if (!invitedUser && !invite) return res.status(404).send('Not found');
 
   const isProd = process.env.NODE_ENV === 'production';
-  res.cookie('invite_token', raw, {
+  
+  // Set invite cookies for later processing
+  res.cookie('inviteToken', raw, {
     httpOnly: true,
     secure: isProd,                 
     sameSite: isProd ? 'None' : 'Lax', 
@@ -33,15 +35,39 @@ inviteLandingRouter.get('/', async (req, res) => {
     return res.redirect(`${FE}/feed?invite=${communityId}`);
   }
   
-  // For user-specific invites, redirect to login (not signup)
+  // For user-specific invites
   if (invitedUser) {
     const communityId = invitedUser.communities && invitedUser.communities.length > 0 
       ? invitedUser.communities[0] 
       : '';
-    return res.redirect(`${FE}/login?invite=${communityId}&type=user`);
+    
+    // Check if this user was created through invitation (firstLogin = true)
+    // or if they're an existing user (firstLogin = false or undefined)
+    if (invitedUser.firstLogin === true) {
+      // New invited user - set invite type and redirect to login
+      res.cookie('inviteType', 'user', {
+        httpOnly: true,
+        secure: isProd,                 
+        sameSite: isProd ? 'None' : 'Lax', 
+      });
+      return res.redirect(`${FE}/login?invite=${communityId}&type=user`);
+    } else {
+      // Existing user - set invite type and redirect to regular login
+      res.cookie('inviteType', 'existing', {
+        httpOnly: true,
+        secure: isProd,                 
+        sameSite: isProd ? 'None' : 'Lax', 
+      });
+      return res.redirect(`${FE}/login?invite=${communityId}&type=existing`);
+    }
   }
   
   // For community invites, redirect to login
+  res.cookie('inviteType', 'community', {
+    httpOnly: true,
+    secure: isProd,                 
+    sameSite: isProd ? 'None' : 'Lax', 
+  });
   return res.redirect(`${FE}/login?invite=${invite.community}&type=community`);
 });
 
