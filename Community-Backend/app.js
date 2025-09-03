@@ -30,30 +30,10 @@ mongoose.connect(config.MONGO_URI)
     console.error('❌ MongoDB connection failed:', error.message);
   });
 
-const allowedOrigins = [
-  config.FRONTEND_URL,        // e.g. https://app.example.com
-  config.ADMIN_URL,           // e.g. https://admin.example.com
-  'http://localhost:3000',    // Local development frontend
-  'http://localhost:5173',    // Vite default port
-  'http://localhost:5174',    // Vite alternative port
-  'http://localhost:5175',    // Vite alternative port
-  'http://localhost:3001',    // Local admin
-  'https://community-consumer.vercel.app', // Production consumer on Vercel
-  'https://community-admin-kpmg-portal.vercel.app', // Production admin on Vercel
-  'https://community-admin-5dm3.vercel.app', // New admin URL
-].filter(Boolean);
-
+// Allow all origins (useful for development/testing)
+// WARNING: In production, consider restricting to specific origins for security
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins
   credentials: true
 }));
 
