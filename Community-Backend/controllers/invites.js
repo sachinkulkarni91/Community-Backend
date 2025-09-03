@@ -24,6 +24,22 @@ const getRandomString = (length = 16) => {
   return Array.from(array, (x) => chars[x % chars.length]).join("");
 }
 
+// Generate username from name
+const generateUsernameFromName = (name) => {
+  if (!name) return 'user' + Math.floor(Math.random() * 1000);
+  
+  // Remove special characters and spaces, convert to lowercase
+  const cleanName = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .substring(0, 15); // Limit length
+  
+  // Add random numbers to make it unique
+  const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  
+  return `${cleanName}${randomSuffix}`;
+}
+
 
 // GET /api/invites/info - Get invite information from token
 inviteRouter.get('/info', async (req, res) => {
@@ -119,7 +135,7 @@ inviteRouter.post('/send', async (req, res) => {
 
   let user = await User.findOne({ email });
   const password = user ? "" : getRandomString(12);
-  const username = getRandomString(16);
+  const username = generateUsernameFromName(name || email.split('@')[0]);
 
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds)
