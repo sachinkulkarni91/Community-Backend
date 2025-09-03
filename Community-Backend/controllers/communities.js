@@ -169,8 +169,13 @@ communityRouter.put('/:id/join', readInviteOptional, async (req, res) => {
   console.log('community', community)
   if (!community) return res.status(404).json({ error: 'Community not found' });
 
+  // Check if user already has this community in their joinedCommunities (pre-assigned via invite)
+  const user = await User.findById(userId).select('joinedCommunities');
+  const isAlreadyInUserCommunities = user.joinedCommunities && user.joinedCommunities.includes(communityId);
+  console.log('🔍 User already in joinedCommunities:', isAlreadyInUserCommunities);
 
-  if (!req.invite || req.invite.community.toString() !== communityId) {
+  // If user doesn't have the community pre-assigned, they need an invite
+  if (!isAlreadyInUserCommunities && (!req.invite || req.invite.community.toString() !== communityId)) {
     return res.status(403).json({ error: 'Invite required' });
   }
 
@@ -223,7 +228,13 @@ communityRouter.post('/:id/join', readInviteOptional, async (req, res) => {
   console.log('community', community)
   if (!community) return res.status(404).json({ error: 'Community not found' });
 
-  if (!req.invite || req.invite.community.toString() !== communityId) {
+  // Check if user already has this community in their joinedCommunities (pre-assigned via invite)
+  const user = await User.findById(userId).select('joinedCommunities');
+  const isAlreadyInUserCommunities = user.joinedCommunities && user.joinedCommunities.includes(communityId);
+  console.log('🔍 User already in joinedCommunities:', isAlreadyInUserCommunities);
+
+  // If user doesn't have the community pre-assigned, they need an invite
+  if (!isAlreadyInUserCommunities && (!req.invite || req.invite.community.toString() !== communityId)) {
     return res.status(403).json({ error: 'Invite required' });
   }
 
