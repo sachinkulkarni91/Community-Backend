@@ -1,4 +1,5 @@
 const Invite = require('../models/invite');
+const User = require('../models/user');
 
 async function findValidInviteByRawToken(rawToken) {
   if (!rawToken || typeof rawToken !== 'string') return null;
@@ -13,4 +14,13 @@ async function findValidInviteByRawToken(rawToken) {
   return invite;
 }
 
-module.exports = { findValidInviteByRawToken }
+async function findUserByInviteToken(rawToken) {
+  if (!rawToken || typeof rawToken !== 'string') return null;
+
+  const tokenHash = require('crypto').createHash('sha256').update(rawToken).digest('hex');
+
+  const user = await User.findOne({ inviteTokenHash: tokenHash });
+  return user;
+}
+
+module.exports = { findValidInviteByRawToken, findUserByInviteToken }

@@ -62,6 +62,10 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: true,
     required: true
+  },
+  inviteTokenHash: {
+    type: String,
+    default: null
   }
 
 }, { timestamps: true })

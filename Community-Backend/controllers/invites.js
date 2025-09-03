@@ -6,7 +6,7 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const config = require('../utils/config');
 const nodemailer = require('nodemailer');
-const { findValidInviteByRawToken } = require('../utils/parseInvite');
+const { findValidInviteByRawToken, findUserByInviteToken } = require('../utils/parseInvite');
 
 // Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -33,26 +33,58 @@ inviteRouter.get('/info', async (req, res) => {
   }
 
   try {
-    const invite = await findValidInviteByRawToken(raw);
-    if (!invite) {
-      return res.status(404).json({ error: 'Invalid or expired invite' });
+    // First check if it's a user-specific invite token
+    const invitedUser = await findUserByInviteToken(raw);
+    if (invitedUser) {
+      return res.json({ 
+        type: 'user',
+        hasValidInvite: true,
+        invitedEmail: invitedUser.email,
+        invitedName: invitedUser.name || '',
+        invitedUsername: invitedUser.username || '',
+        communities: invitedUser.communities,
+        message: 'User-specific invite found'
+      });
     }
 
-    // Find users that were created for this community and have firstLogin = true
-    // These are the users that were invited but haven't completed signup yet
-    const invitedUsers = await User.find({ 
-      firstLogin: true,
-      // We don't directly link users to invites, so we'll return the invite info
-      // The frontend will need to let the user enter their email
-    });
+    // Fallback to community invite check
+    const invite = await findValidInviteByRawToken(raw);
+    if (invite) {
+      return res.json({ 
+        type: 'community',
+        hasValidInvite: true,
+        communityId: invite.community,
+        message: 'Community invite found'
+      });
+    }
 
-    res.json({ 
-      communityId: invite.community,
-      hasValidInvite: true,
-      message: 'Please enter the email address that received the invite'
-    });
+    return res.status(404).json({ error: 'Invalid or expired invite' });
   } catch (error) {
     console.error('Error getting invite info:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/invites/user-info/:email - Get invited user info by email
+inviteRouter.get('/user-info/:email', async (req, res) => {
+  const { email } = req.params;
+  
+  try {
+    const user = await User.findOne({ email, firstLogin: true });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: "No invited user found with this email address" 
+      });
+    }
+
+    res.json({
+      email: user.email,
+      name: user.name || '',
+      hasValidInvite: true
+    });
+  } catch (error) {
+    console.error('Error getting user info:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -81,14 +113,9 @@ inviteRouter.post('/', async (req, res) => {
 
 // POST /api/invites/send
 inviteRouter.post('/send', async (req, res) => {
-  const { communityId, email} = req.body;
+  const { communityId, email, name} = req.body;
 
   if (!communityId || !email) return res.status(400).json({error : "Missing parameters"})
-
-  let invite = await Invite.findOne({ community: communityId });
-  if (!invite) {
-     invite = await Invite.issue({ communityId, maxUses: 5 });
-  }
 
   let user = await User.findOne({ email });
   const password = user ? "" : getRandomString(12);
@@ -97,15 +124,21 @@ inviteRouter.post('/send', async (req, res) => {
   const saltRounds = 10;
   const passwordHash = await bcrypt.hash(password, saltRounds)
 
+  // Create user-specific invite token
+  const userInviteToken = getRandomString(32);
+  const tokenHash = require('crypto').createHash('sha256').update(userInviteToken).digest('hex');
+
   // Send email to user with nodemailer
   if (!user) {
     user = await User.create({ 
       email, 
+      name: name || '', 
       username, 
       passwordHash, 
       provider: "local", 
       role: "user",
-      firstLogin: true
+      firstLogin: true,
+      inviteTokenHash: tokenHash // Store the invite token hash with the user
     });
     
     const mailOptions = {
@@ -113,9 +146,9 @@ inviteRouter.post('/send', async (req, res) => {
       to: email,
       subject: 'KPMG Community - New User Invite',
       html: `
-        <h2>Welcome to KPMG Community!</h2>
+        <h2>Welcome to KPMG Community, ${name || 'there'}!</h2>
         <p>You've been invited to join our community platform.</p>
-        <p><strong>Your invite link:</strong> <a href="${config.BACKEND_URL}${invite.link}">Click here to join</a></p>
+        <p><strong>Your invite link:</strong> <a href="${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}">Click here to join</a></p>
         <p><strong>Your temporary password:</strong> <code>${password}</code></p>
         <p>Please use this password to login for the first time, then change it in your profile settings.</p>
         <br>
@@ -128,18 +161,22 @@ inviteRouter.post('/send', async (req, res) => {
       console.log(`✅ Email sent successfully to: ${email}`);
       res.status(200).json({ 
         message: 'User created and invite email sent successfully!',
-        inviteLink: `${config.BACKEND_URL}${invite.link}`
+        inviteLink: `${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}`
       });
     } catch (error) {
       console.error('❌ Email sending failed:', error);
       res.status(200).json({ 
         message: 'User created but email failed. Please check logs.',
-        inviteLink: `${config.BACKEND_URL}${invite.link}`,
+        inviteLink: `${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}`,
         tempPassword: password
       });
     }
     return;
   }
+
+  // Handle existing user - update their invite token
+  user.inviteTokenHash = tokenHash;
+  await user.save();
 
   // Send invite email to existing user
   const mailOptions = {
@@ -149,7 +186,7 @@ inviteRouter.post('/send', async (req, res) => {
     html: `
       <h2>You're invited to join a community!</h2>
       <p>You've been invited to join a new community on our platform.</p>
-      <p><strong>Click here to join:</strong> <a href="${config.BACKEND_URL}${invite.link}">Join Community</a></p>
+      <p><strong>Click here to join:</strong> <a href="${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}">Join Community</a></p>
       <br>
       <p>Best regards,<br>KPMG Community Team</p>
     `
@@ -160,13 +197,13 @@ inviteRouter.post('/send', async (req, res) => {
     console.log(`✅ Email sent successfully to: ${user.email}`);
     res.status(200).json({ 
       message: 'Invite email sent successfully!',
-      inviteLink: `${config.BACKEND_URL}${invite.link}`
+      inviteLink: `${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}`
     });
   } catch (error) {
     console.error('❌ Email sending failed:', error);
     res.status(200).json({ 
       message: 'Invite created but email failed. Please check logs.',
-      inviteLink: `${config.BACKEND_URL}${invite.link}`
+      inviteLink: `${config.BACKEND_URL}/community/redirect/?t=${encodeURIComponent(userInviteToken)}`
     });
   }
 

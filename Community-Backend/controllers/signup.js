@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const config = require('../utils/config')
 const jwt = require('jsonwebtoken')
 const isAdmin = require('../utils/isAdmin');
+const { findUserByInviteToken } = require('../utils/parseInvite');
 
 // handle GET request to signup page (for direct access)
 signupRouter.get('/', (req, res) => {
@@ -13,6 +14,75 @@ signupRouter.get('/', (req, res) => {
   }
   // Otherwise redirect to frontend signup page
   res.redirect(`${config.FRONTEND_URL}/signup`);
+});
+
+// Handle invite-based signup
+signupRouter.post('/invite', async (req, res, next) => {
+  const { password } = req.body;
+  
+  if (!password || password.length < 3) {
+    return res.status(400).json({
+      error: !password ? 'Password is required' : 'Password must be at least 3 characters long'
+    });
+  }
+  
+  // Get invite token from cookie
+  const inviteToken = req.cookies?.invite_token;
+  if (!inviteToken) {
+    return res.status(400).json({ error: 'No invite token found' });
+  }
+  
+  try {
+    // Find the invited user by token
+    const invitedUser = await findUserByInviteToken(inviteToken);
+    if (!invitedUser) {
+      return res.status(400).json({ error: 'Invalid or expired invite token' });
+    }
+    
+    // Check if user already has a password (already signed up)
+    if (invitedUser.passwordHash) {
+      return res.status(400).json({ error: 'This invite has already been used' });
+    }
+    
+    // Hash the password
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+    
+    // Update the user with the password and clear the invite token
+    invitedUser.passwordHash = passwordHash;
+    invitedUser.provider = "local";
+    invitedUser.inviteTokenHash = null; // Clear the invite token
+    
+    const savedUser = await invitedUser.save();
+    
+    // Create JWT token
+    const token = jwt.sign(
+      { username: savedUser.username, id: savedUser._id },
+      config.SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    // Set cookie
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      maxAge: 60 * 60 * 1000
+    });
+    
+    res.status(200).json({
+      username: savedUser.username,
+      name: savedUser.name,
+      id: savedUser._id,
+      role: savedUser.role,
+      communities: savedUser.communities
+    });
+    
+  } catch (error) {
+    console.log('Invite signup error:', error);
+    next(error);
+  }
 });
 
 // Handle regular user signup
