@@ -1,5 +1,56 @@
 ### Community Backend - Complete API Testing
 # Base URL: http://localhost:3016
+# Server Status: ✅ Running on port 3016
+
+### 🚀 QUICK TEST SEQUENCE (Run these in order)
+
+### 1. Health Check (No Auth Required)
+GET http://localhost:3016/healthz
+
+### 2. Login to Get JWT Token
+POST http://localhost:3016/auth/login
+Content-Type: application/json
+
+{
+  "username": "Admin@gmail.com",
+  "password": "Admin@108"
+}
+
+### 3. Test Events List (Replace YOUR_JWT_TOKEN with token from step 2)
+GET http://localhost:3016/api/events
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 4. Test Specific Event (Our dummy event #1)
+GET http://localhost:3016/api/events/68b9a8084c565ffe234e1f3a
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 4b. Test Specific Event (Our dummy event #2)
+GET http://localhost:3016/api/events/68b9f2e12fe731c27522a52c
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 5. Get Event Statistics (Admin Only)
+GET http://localhost:3016/api/events/stats
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 6. Create New Event (Admin Only) - Test creating your own event
+POST http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "title": "Test Event Created via API",
+  "description": "This is a test event created through the API to verify everything works",
+  "community": "68763c89d9be5c82be49c37e",
+  "startDateTime": "2025-09-20T10:00:00.000Z",
+  "endDateTime": "2025-09-20T12:00:00.000Z",
+  "platform": "Zoom",
+  "meetingLink": "https://zoom.us/j/testmeeting",
+  "maxAttendees": 25,
+  "category": "Workshop",
+  "tags": ["API", "Test", "Demo"]
+}
+
+### ======================================================================
 
 ### 🏥 HEALTH ENDPOINTS
 
@@ -347,12 +398,32 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 ### 🎉 EVENTS ENDPOINTS
 
-### Get Events (User's Communities)
+### Step 1: Login First to Get JWT Token
+POST http://localhost:3016/auth/login
+Content-Type: application/json
+
+{
+  "username": "Admin@gmail.com",
+  "password": "Admin@108"
+}
+
+### Step 2: Test Health Check (No Auth Required)
+GET http://localhost:3016/healthz
+
+### Step 3: Get Events (User's Communities) - Replace YOUR_JWT_TOKEN with token from login
 GET http://localhost:3016/api/events/
 Authorization: Bearer YOUR_JWT_TOKEN
 
-### Get Events with Filters
+### Step 4: Get Events with Filters
 GET http://localhost:3016/api/events/?timeFilter=upcoming&limit=10&page=1
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Step 5: Test the Dummy Event We Created
+GET http://localhost:3016/api/events/68b9a8084c565ffe234e1f3a
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Step 6: Get Event Statistics (Admin Only)
+GET http://localhost:3016/api/events/stats
 Authorization: Bearer YOUR_JWT_TOKEN
 
 ### Get All Events (Admin Only)
