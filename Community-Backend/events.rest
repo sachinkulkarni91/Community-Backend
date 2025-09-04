@@ -1,0 +1,187 @@
+### Events API Testing
+
+# Server running on localhost:3016
+
+### 1. Get All Events (for regular users - shows events from joined communities)
+GET http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 2. Get All Events (Admin view - shows all events)
+GET http://localhost:3016/api/events/all
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 3. Get Events with filters (upcoming events)
+GET http://localhost:3016/api/events?timeFilter=upcoming&limit=5&page=1
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 4. Get Events with filters (past events)
+GET http://localhost:3016/api/events?timeFilter=past&limit=5&page=1
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 5. Get Events with filters (live events)
+GET http://localhost:3016/api/events?timeFilter=live&limit=5&page=1
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 6. Get Events by Community
+GET http://localhost:3016/api/events?community=COMMUNITY_ID_HERE
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 7. Get Single Event by ID
+GET http://localhost:3016/api/events/EVENT_ID_HERE
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 8. Create New Event (Admin only)
+POST http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "AI Unlocked: Machine Learning Workshop",
+  "description": "A comprehensive workshop covering the foundations of machine learning, including supervised and unsupervised learning techniques, neural networks, and practical applications in business.",
+  "community": "COMMUNITY_ID_HERE",
+  "startDateTime": "2025-09-15T10:00:00.000Z",
+  "endDateTime": "2025-09-15T12:00:00.000Z",
+  "platform": "Zoom",
+  "meetingLink": "https://zoom.us/j/123456789",
+  "maxAttendees": 50,
+  "category": "Workshop",
+  "tags": ["AI", "Machine Learning", "Technology"],
+  "image": "/assets/workshop-ai.png"
+}
+
+### 9. Create Another Event Example (Webinar)
+POST http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "Digital Marketing Trends 2025",
+  "description": "Explore the latest trends in digital marketing, including AI-powered marketing tools, social media strategies, and customer engagement techniques for the modern business landscape.",
+  "community": "COMMUNITY_ID_HERE",
+  "startDateTime": "2025-09-20T14:00:00.000Z",
+  "endDateTime": "2025-09-20T15:30:00.000Z",
+  "platform": "Teams",
+  "meetingLink": "https://teams.microsoft.com/l/meetup-join/...",
+  "maxAttendees": 100,
+  "category": "Webinar",
+  "tags": ["Marketing", "Digital", "Trends", "Business"],
+  "image": "/assets/marketing-webinar.png"
+}
+
+### 10. Create Event with In-Person Location
+POST http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "Community Networking Meetup",
+  "description": "Join us for an informal networking event where community members can meet, share ideas, and build connections. Light refreshments will be provided.",
+  "community": "COMMUNITY_ID_HERE",
+  "startDateTime": "2025-09-25T18:00:00.000Z",
+  "endDateTime": "2025-09-25T20:00:00.000Z",
+  "platform": "In-Person",
+  "location": "Conference Room A, Tech Hub Building, Downtown",
+  "maxAttendees": 30,
+  "category": "Social",
+  "tags": ["Networking", "Community", "In-Person"],
+  "image": "/assets/networking-event.png"
+}
+
+### 11. Update Event (Admin only)
+PUT http://localhost:3016/api/events/EVENT_ID_HERE
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "AI Unlocked: Advanced Machine Learning Workshop",
+  "description": "An advanced workshop covering deep learning, reinforcement learning, and cutting-edge AI applications.",
+  "maxAttendees": 75,
+  "status": "published"
+}
+
+### 12. Upload Event Image (Admin only)
+POST http://localhost:3016/api/events/upload-image
+Content-Type: multipart/form-data
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+# Note: This endpoint expects a file upload with field name "image"
+# Use a tool like Postman or curl for file uploads
+
+### 13. Enroll in Event
+POST http://localhost:3016/api/events/EVENT_ID_HERE/enroll
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 14. Unenroll from Event
+DELETE http://localhost:3016/api/events/EVENT_ID_HERE/enroll
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 15. Get My Enrolled Events
+GET http://localhost:3016/api/events/my/enrolled
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 16. Get My Enrolled Events (upcoming only)
+GET http://localhost:3016/api/events/my/enrolled?timeFilter=upcoming
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 17. Get My Enrolled Events (past only)
+GET http://localhost:3016/api/events/my/enrolled?timeFilter=past
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 18. Get Event Statistics (Admin only)
+GET http://localhost:3016/api/events/stats
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 19. Delete Event (Admin only)
+DELETE http://localhost:3016/api/events/EVENT_ID_HERE
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 20. Example: Create a Training Event
+POST http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "Leadership Development Program",
+  "description": "A comprehensive training program designed to develop leadership skills, covering team management, strategic thinking, and effective communication techniques.",
+  "community": "COMMUNITY_ID_HERE",
+  "startDateTime": "2025-10-01T09:00:00.000Z",
+  "endDateTime": "2025-10-01T17:00:00.000Z",
+  "platform": "Google Meet",
+  "meetingLink": "https://meet.google.com/xyz-abc-def",
+  "maxAttendees": 25,
+  "category": "Training",
+  "tags": ["Leadership", "Management", "Professional Development"],
+  "image": "/assets/leadership-training.png"
+}
+
+### 21. Example: Create a Virtual Meeting
+POST http://localhost:3016/api/events
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "Monthly Community Check-in",
+  "description": "Our regular monthly meeting to discuss community updates, upcoming initiatives, and address member feedback.",
+  "community": "COMMUNITY_ID_HERE",
+  "startDateTime": "2025-09-30T16:00:00.000Z",
+  "endDateTime": "2025-09-30T17:00:00.000Z",
+  "platform": "Zoom",
+  "meetingLink": "https://zoom.us/j/987654321",
+  "category": "Meeting",
+  "tags": ["Community", "Updates", "Feedback"],
+  "image": "/assets/community-meeting.png"
+}

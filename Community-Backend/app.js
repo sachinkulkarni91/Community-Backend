@@ -14,6 +14,7 @@ const commentRouter = require('./controllers/comments');
 const healthRouter = require('./controllers/health');
 const inviteLandingRouter = require('./controllers/inviteLink');
 const inviteRouter = require('./controllers/invites');
+const eventRouter = require('./controllers/events');
 const passwordRouter = require('./controllers/forgotpassword');
 const detectAdminPortal = require('./utils/detectAdminPortal');
 
@@ -62,6 +63,7 @@ app.use('/api/users', userRouter)
 app.use('/api/communities', communityRouter)
 app.use('/api/comments', commentRouter)
 app.use('/api/posts', postRouter)
+app.use('/api/events', eventRouter)
 app.use('/auth/login', loginRouter)
 app.use('/auth/signup', signupRouter)
 app.use('/api/me', meRouter)

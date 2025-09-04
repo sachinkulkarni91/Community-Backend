@@ -1,0 +1,483 @@
+### Community Backend - Complete API Testing
+# Base URL: http://localhost:3016
+
+### 🏥 HEALTH ENDPOINTS
+
+### Health Check
+GET http://localhost:3016/healthz
+
+### Readiness Check  
+GET http://localhost:3016/readyz
+
+### Ping
+GET http://localhost:3016/ping
+
+### 🔐 AUTHENTICATION ENDPOINTS
+
+### Get Login Page
+GET http://localhost:3016/auth/login/
+
+### User Login
+POST http://localhost:3016/auth/login/
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+### User Logout
+POST http://localhost:3016/auth/login/logout
+Content-Type: application/json
+
+### Check Invite Email
+POST http://localhost:3016/auth/login/check-invite-email
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+### Get Signup Page
+GET http://localhost:3016/auth/signup/
+
+### Regular Signup
+POST http://localhost:3016/auth/signup/
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "username": "johndoe"
+}
+
+### Signup with Invite
+POST http://localhost:3016/auth/signup/invite
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "password123",
+  "username": "janedoe",
+  "inviteCode": "INVITE_CODE_HERE"
+}
+
+### Create Admin User (Admin Only)
+POST http://localhost:3016/auth/signup/admin
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "Admin User",
+  "email": "admin@example.com",
+  "password": "adminpass123",
+  "username": "admin"
+}
+
+### Request Password Reset
+POST http://localhost:3016/auth/forgot-password/
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+
+### Verify Reset Code
+POST http://localhost:3016/auth/forgot-password/verify
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+
+### Reset Password
+POST http://localhost:3016/auth/forgot-password/reset
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "code": "123456",
+  "newPassword": "newpassword123"
+}
+
+### 👤 USER MANAGEMENT ENDPOINTS
+
+### Get All Users
+GET http://localhost:3016/api/users/
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Change User Password
+POST http://localhost:3016/api/users/change-password
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "currentPassword": "oldpassword",
+  "newPassword": "newpassword123"
+}
+
+### Get Current User Profile
+GET http://localhost:3016/api/me/
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Update Current User Profile
+POST http://localhost:3016/api/me/
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "Updated Name",
+  "bio": "Updated bio",
+  "location": "New York"
+}
+
+### Get User's Posts
+GET http://localhost:3016/api/me/posts
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Admin Requests
+GET http://localhost:3016/api/me/admin-requests
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Change Password (Me)
+POST http://localhost:3016/api/me/change-password
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "currentPassword": "oldpassword",
+  "newPassword": "newpassword123"
+}
+
+### Upload Profile Photo
+POST http://localhost:3016/api/me/photo
+Content-Type: multipart/form-data
+Authorization: Bearer YOUR_JWT_TOKEN
+
+# Note: Use multipart form with 'image' field
+
+### 🏘️ COMMUNITY ENDPOINTS
+
+### Get All Communities
+GET http://localhost:3016/api/communities/
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Single Community
+GET http://localhost:3016/api/communities/COMMUNITY_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create Community (Admin Only)
+POST http://localhost:3016/api/communities/
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "Tech Innovators",
+  "description": "A community for technology enthusiasts",
+  "isPrivate": false,
+  "tags": ["Technology", "Innovation", "Startups"]
+}
+
+### Create Custom Community (Admin Only)
+POST http://localhost:3016/api/communities/custom
+Content-Type: multipart/form-data
+Authorization: Bearer YOUR_JWT_TOKEN
+
+# Note: Use multipart form with community data and image
+
+### Update Community (Admin Only)
+PUT http://localhost:3016/api/communities/COMMUNITY_ID
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "Updated Community Name",
+  "description": "Updated description"
+}
+
+### Delete Community (Admin Only)
+DELETE http://localhost:3016/api/communities/COMMUNITY_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Update Community Image (Admin Only)
+PUT http://localhost:3016/api/communities/COMMUNITY_ID/image
+Content-Type: multipart/form-data
+Authorization: Bearer YOUR_JWT_TOKEN
+
+# Note: Use multipart form with 'image' field
+
+### Join Community
+PUT http://localhost:3016/api/communities/COMMUNITY_ID/join
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Join Community (Alternative)
+POST http://localhost:3016/api/communities/COMMUNITY_ID/join
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Leave Community
+PUT http://localhost:3016/api/communities/COMMUNITY_ID/leave
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Request to Join Private Community
+POST http://localhost:3016/api/communities/COMMUNITY_ID/request-join
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "message": "I would like to join this community"
+}
+
+### Approve Join Request
+POST http://localhost:3016/api/communities/COMMUNITY_ID/approve-request
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "userId": "USER_ID_TO_APPROVE"
+}
+
+### Reject Join Request
+POST http://localhost:3016/api/communities/COMMUNITY_ID/reject-request
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "userId": "USER_ID_TO_REJECT"
+}
+
+### Create Space in Community
+POST http://localhost:3016/api/communities/COMMUNITY_ID/spaces
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "General Discussion",
+  "description": "General chat for community members"
+}
+
+### Get Community Spaces
+GET http://localhost:3016/api/communities/COMMUNITY_ID/spaces
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Single Space
+GET http://localhost:3016/api/communities/spaces/SPACE_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Send Message to Space
+POST http://localhost:3016/api/communities/spaces/SPACE_ID/messages
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "content": "Hello everyone!"
+}
+
+### 📝 POSTS ENDPOINTS
+
+### Get All Posts
+GET http://localhost:3016/api/posts/
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Single Post
+GET http://localhost:3016/api/posts/POST_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create New Post
+POST http://localhost:3016/api/posts/
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "title": "Welcome to our community",
+  "content": "This is our first post! Welcome everyone.",
+  "community": "COMMUNITY_ID",
+  "tags": ["welcome", "introduction"]
+}
+
+### Delete Post
+DELETE http://localhost:3016/api/posts/POST_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Like Post
+PUT http://localhost:3016/api/posts/POST_ID/like
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Unlike Post
+PUT http://localhost:3016/api/posts/POST_ID/unlike
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Posts by Community
+GET http://localhost:3016/api/posts/community/COMMUNITY_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Post Comments
+GET http://localhost:3016/api/posts/POST_ID/comments
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Add Comment to Post
+POST http://localhost:3016/api/posts/POST_ID/comments
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "content": "Great post! Thanks for sharing."
+}
+
+### 💬 COMMENTS ENDPOINTS
+
+### Update Comment
+PUT http://localhost:3016/api/comments/COMMENT_ID
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "content": "Updated comment content"
+}
+
+### Delete Comment
+DELETE http://localhost:3016/api/comments/COMMENT_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Like Comment
+PUT http://localhost:3016/api/comments/COMMENT_ID/like
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 🎉 EVENTS ENDPOINTS
+
+### Get Events (User's Communities)
+GET http://localhost:3016/api/events/
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Events with Filters
+GET http://localhost:3016/api/events/?timeFilter=upcoming&limit=10&page=1
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get All Events (Admin Only)
+GET http://localhost:3016/api/events/all
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Event Statistics (Admin Only)
+GET http://localhost:3016/api/events/stats
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Single Event
+GET http://localhost:3016/api/events/EVENT_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create New Event (Admin Only)
+POST http://localhost:3016/api/events/
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "title": "React Development Workshop",
+  "description": "Learn React fundamentals and best practices in this hands-on workshop",
+  "community": "COMMUNITY_ID",
+  "startDateTime": "2025-09-15T10:00:00.000Z",
+  "endDateTime": "2025-09-15T12:00:00.000Z",
+  "platform": "Zoom",
+  "meetingLink": "https://zoom.us/j/123456789",
+  "maxAttendees": 50,
+  "category": "Workshop",
+  "tags": ["React", "JavaScript", "Frontend"]
+}
+
+### Update Event (Admin Only)
+PUT http://localhost:3016/api/events/EVENT_ID
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "title": "Advanced React Workshop",
+  "maxAttendees": 75
+}
+
+### Delete Event (Admin Only)
+DELETE http://localhost:3016/api/events/EVENT_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Upload Event Image (Admin Only)
+POST http://localhost:3016/api/events/upload-image
+Content-Type: multipart/form-data
+Authorization: Bearer YOUR_JWT_TOKEN
+
+# Note: Use multipart form with 'image' field
+
+### Enroll in Event
+POST http://localhost:3016/api/events/EVENT_ID/enroll
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Unenroll from Event
+DELETE http://localhost:3016/api/events/EVENT_ID/enroll
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get My Enrolled Events
+GET http://localhost:3016/api/events/my/enrolled
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get My Enrolled Events (Upcoming)
+GET http://localhost:3016/api/events/my/enrolled?timeFilter=upcoming
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 📧 INVITES ENDPOINTS
+
+### Get Invite Information
+GET http://localhost:3016/api/invites/info?code=INVITE_CODE
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get User Info by Email
+GET http://localhost:3016/api/invites/user-info/user@example.com
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Get Invite by ID
+GET http://localhost:3016/api/invites/INVITE_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Create Invite
+POST http://localhost:3016/api/invites/
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "email": "newuser@example.com",
+  "communityId": "COMMUNITY_ID",
+  "message": "Join our awesome community!"
+}
+
+### Send Invite
+POST http://localhost:3016/api/invites/send
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "email": "newuser@example.com",
+  "communityId": "COMMUNITY_ID"
+}
+
+### Invite Landing Page
+GET http://localhost:3016/community/redirect/?code=INVITE_CODE
+
+### 💬 MESSAGES ENDPOINTS
+
+### Send Message to Space
+POST http://localhost:3016/api/spaces/SPACE_ID/messages
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "content": "Hello everyone in this space!"
+}
+
+### Get Messages from Space
+GET http://localhost:3016/api/spaces/SPACE_ID/messages
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 📝 NOTES:
+# 1. Replace YOUR_JWT_TOKEN with actual JWT token from login
+# 2. Replace COMMUNITY_ID, POST_ID, EVENT_ID etc. with actual IDs
+# 3. For file uploads, use multipart/form-data with appropriate field names
+# 4. Admin endpoints require admin role
+# 5. Server runs on http://localhost:3016
