@@ -10,55 +10,76 @@ const { storage, getOptimizedUrl } = require('../utils/cloudinary');
 const Post = require('../models/post');
 
 
-// Get all communities (all for admins, only joined ones for regular users)
+// Get all communities (publicly viewable by all users)
 communityRouter.get('/', async (req, res) => {
-  const userId = req.user._id;
-  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
-  
-  if (isUserAdmin) {
-    // Admin can see all communities
+  try {
+    const userId = req.user._id;
+    const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
+    
+    // All users can now see all communities to discover and join them
     const communities = await Community.find({})
       .populate('owner', 'username name profilePhoto')
       .populate('admins', 'username name profilePhoto')
       .populate('members', 'username name profilePhoto')
-    return res.json(communities);
+      .sort({ createdAt: -1 }); // Show newest communities first
+    
+    // Add membership status for each community for the current user
+    const user = await User.findById(userId).select('joinedCommunities');
+    const userJoinedCommunities = user?.joinedCommunities || [];
+    
+    const communitiesWithMembershipStatus = communities.map(community => {
+      const communityObj = community.toJSON();
+      communityObj.isMember = userJoinedCommunities.includes(community._id);
+      communityObj.memberCount = community.members ? community.members.length : 0;
+      return communityObj;
+    });
+    
+    res.json(communitiesWithMembershipStatus);
+  } catch (error) {
+    console.error('Error fetching communities:', error);
+    res.status(500).json({ error: 'Failed to fetch communities' });
   }
-  
-  // Regular users can only see communities they've joined
-  const user = await User.findById(userId).select('joinedCommunities');
-  if (!user || !user.joinedCommunities?.length) {
-    return res.json([]); // Return empty array if user hasn't joined any communities
-  }
-  
-  const communities = await Community.find({ _id: { $in: user.joinedCommunities } })
-    .populate('owner', 'username name profilePhoto')
-    .populate('admins', 'username name profilePhoto')
-    .populate('members', 'username name profilePhoto')
-  res.json(communities)
 })
 
-// Get single community (any community for admins, only joined ones for regular users)
+// Get single community (publicly viewable by all users)
 communityRouter.get('/:id', async (req, res) => {
-  const userId = req.user._id;
-  const communityId = req.params.id;
-  const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
-  
-  if (!isUserAdmin) {
-    // Check if regular user is a member of this community
-    const user = await User.findById(userId).select('joinedCommunities');
-    if (!user || !user.joinedCommunities.includes(communityId)) {
-      return res.status(403).json({ error: 'Access denied. You are not a member of this community.' });
-    }
-  }
-  
-  const community = await Community.findById(communityId)
-    .populate('owner', 'username name profilePhoto')
-    .populate('admins', 'username name profilePhoto')
-    .populate('members', 'username name profilePhoto')
-    .populate('spaces', 'name')
+  try {
+    const userId = req.user._id;
+    const communityId = req.params.id;
+    const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
+    
+    const community = await Community.findById(communityId)
+      .populate('owner', 'username name profilePhoto')
+      .populate('admins', 'username name profilePhoto')
+      .populate('members', 'username name profilePhoto')
+      .populate('spaces', 'name')
 
-  if (!community) return res.status(404).json({ error: 'Community not found' })
-  res.json(community)
+    if (!community) {
+      return res.status(404).json({ error: 'Community not found' });
+    }
+    
+    // Check if user is a member
+    const user = await User.findById(userId).select('joinedCommunities');
+    const isMember = user?.joinedCommunities?.includes(communityId) || false;
+    
+    // Add membership status to response
+    const communityObj = community.toJSON();
+    communityObj.isMember = isMember;
+    communityObj.memberCount = community.members ? community.members.length : 0;
+    
+    // For non-members and non-admins, limit some sensitive information
+    if (!isMember && !isUserAdmin) {
+      // Hide detailed member information for privacy
+      communityObj.members = [];
+      communityObj.spaces = []; // Hide spaces until they join
+      communityObj.joinRequests = []; // Hide join requests
+    }
+    
+    res.json(communityObj);
+  } catch (error) {
+    console.error('Error fetching community:', error);
+    res.status(500).json({ error: 'Failed to fetch community' });
+  }
 })
 
 const upload = multer({ storage });

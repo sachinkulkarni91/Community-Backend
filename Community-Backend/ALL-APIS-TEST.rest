@@ -50,6 +50,14 @@ Authorization: Bearer YOUR_JWT_TOKEN
   "tags": ["API", "Test", "Demo"]
 }
 
+### 7. Test Communities (Now Public) - All users can view all communities
+GET http://localhost:3016/api/communities
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### 8. Test Specific Community (Service Now)
+GET http://localhost:3016/api/communities/68763c89d9be5c82be49c37e
+Authorization: Bearer YOUR_JWT_TOKEN
+
 ### ======================================================================
 
 ### 🏥 HEALTH ENDPOINTS
@@ -210,14 +218,18 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 # Note: Use multipart form with 'image' field
 
-### 🏘️ COMMUNITY ENDPOINTS
+### 🏘️ COMMUNITY ENDPOINTS (✅ NOW PUBLIC - All users can view all communities)
 
-### Get All Communities
+### Get All Communities (Now available to all users - not just admins)
 GET http://localhost:3016/api/communities/
 Authorization: Bearer YOUR_JWT_TOKEN
 
-### Get Single Community
+### Get Single Community (Now available to all users)
 GET http://localhost:3016/api/communities/COMMUNITY_ID
+Authorization: Bearer YOUR_JWT_TOKEN
+
+### Test with Service Now Community (Our existing community)
+GET http://localhost:3016/api/communities/68763c89d9be5c82be49c37e
 Authorization: Bearer YOUR_JWT_TOKEN
 
 ### Create Community (Admin Only)
