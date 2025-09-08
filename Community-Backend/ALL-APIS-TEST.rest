@@ -438,7 +438,7 @@ Authorization: Bearer YOUR_JWT_TOKEN
 GET http://localhost:3016/api/events/stats
 Authorization: Bearer YOUR_JWT_TOKEN
 
-### Get All Events (Admin Only)
+### Get All Events (Now accessible to all authenticated users! ✅)
 GET http://localhost:3016/api/events/all
 Authorization: Bearer YOUR_JWT_TOKEN
 

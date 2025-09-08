@@ -2,7 +2,7 @@
 
 # Server running on localhost:3016
 
-### 1. Get All Events (for regular users - shows events from joined communities)
+### 1. Get All Events (now shows all events to all users)
 GET http://localhost:3016/api/events
 Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE

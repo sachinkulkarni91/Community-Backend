@@ -1,0 +1,3 @@
+### Test Events All Endpoint (Without Auth)
+GET http://localhost:3016/api/events/all
+Content-Type: application/json

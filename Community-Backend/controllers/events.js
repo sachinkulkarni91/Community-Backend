@@ -19,7 +19,7 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
-// GET /api/events - Get all events (filter by community if user is not admin)
+// GET /api/events - Get all events (publicly viewable by all users)
 eventRouter.get('/', async (req, res) => {
   try {
     const userId = req.user._id;
@@ -28,14 +28,8 @@ eventRouter.get('/', async (req, res) => {
 
     let filter = { status };
 
-    // If not admin, only show events from communities user belongs to
-    if (!isUserAdmin) {
-      const user = await User.findById(userId).select('joinedCommunities');
-      if (!user || !user.joinedCommunities?.length) {
-        return res.json([]);
-      }
-      filter.community = { $in: user.joinedCommunities };
-    }
+    // Now all users can see all events (removed community restriction)
+    // This allows users to discover events from all communities
 
     // Filter by specific community if provided
     if (community) {
@@ -83,8 +77,9 @@ eventRouter.get('/', async (req, res) => {
   }
 });
 
-// GET /api/events/all - Get all events for admin (no filtering)
-eventRouter.get('/all', isAdmin, async (req, res) => {
+// GET /api/events/all - Get all events (accessible to all authenticated users)
+eventRouter.get('/all', async (req, res) => {
+  // This endpoint is now fully public: no authentication or user required
   try {
     const { status, timeFilter, limit, page = 1 } = req.query;
 
@@ -243,21 +238,22 @@ eventRouter.post('/', isAdmin, async (req, res) => {
       return res.status(400).json({ error: 'End time must be after start time' });
     }
 
-    const event = new Event({
-      title,
-      description,
-      community,
-      organizer: req.user._id,
-      startDateTime: start,
-      endDateTime: end,
-      platform,
-      meetingLink,
-      location,
-      maxAttendees,
-      category,
-      tags: tags || [],
-      image: image || '/assets/1.png'
-    });
+      const event = new Event({
+        title,
+        description,
+        community,
+        organizer: req.user._id,
+        startDateTime: start,
+        endDateTime: end,
+        platform,
+        meetingLink,
+        location,
+        maxAttendees,
+        category,
+        tags: tags || [],
+        image: image || '/assets/1.png',
+        isPartnered: req.body.isPartnered || false
+      });
 
     const savedEvent = await event.save();
     const populatedEvent = await Event.findById(savedEvent._id)
@@ -301,6 +297,7 @@ eventRouter.put('/:id', isAdmin, async (req, res) => {
     if (category) updateData.category = category;
     if (tags) updateData.tags = tags;
     if (image) updateData.image = image;
+  if (req.body.isPartnered !== undefined) updateData.isPartnered = req.body.isPartnered;
     if (status) updateData.status = status;
 
     // Validate dates if both are provided
@@ -473,6 +470,50 @@ eventRouter.get('/my/enrolled', async (req, res) => {
   } catch (error) {
     console.error('Error fetching enrolled events:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /api/events/:id - Delete an event (admin only)
+eventRouter.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const isUserAdmin = req.user.role === 'admin' || req.isAdminPortalRequest;
+
+    if (!isUserAdmin) {
+      return res.status(403).json({ 
+        error: 'Access denied. Only administrators can delete events.' 
+      });
+    }
+
+    // Find the event first
+    const event = await Event.findById(id).populate('community', 'name');
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    // Store event info for response
+    const deletedEventInfo = {
+      id: event._id,
+      title: event.title,
+      community: event.community?.name || 'Unknown',
+      startDateTime: event.startDateTime
+    };
+
+    // Delete the event
+    await Event.findByIdAndDelete(id);
+
+    res.json({ 
+      message: 'Event deleted successfully',
+      deletedEvent: deletedEventInfo
+    });
+
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete event',
+      details: error.message 
+    });
   }
 });
 

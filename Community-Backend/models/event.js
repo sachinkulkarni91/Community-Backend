@@ -76,6 +76,10 @@ const eventSchema = new mongoose.Schema({
     enum: ['draft', 'published', 'cancelled', 'completed'],
     default: 'published'
   },
+  isPartnered: {
+    type: Boolean,
+    default: false
+  },
   isRecurring: {
     type: Boolean,
     default: false
@@ -129,7 +133,6 @@ eventSchema.set('toJSON', {
   }
 });
 
-// Index for efficient queries
 eventSchema.index({ community: 1, startDateTime: 1 });
 eventSchema.index({ startDateTime: 1 });
 eventSchema.index({ status: 1 });
