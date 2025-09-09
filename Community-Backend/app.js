@@ -18,6 +18,8 @@ const eventRouter = require('./controllers/events');
 const passwordRouter = require('./controllers/forgotpassword');
 const detectAdminPortal = require('./utils/detectAdminPortal');
 
+const announcementRouter = require('./controllers/announcements');
+
 
 const app = express()
 app.use(express.json())
@@ -68,6 +70,7 @@ app.use('/auth/login', loginRouter)
 app.use('/auth/signup', signupRouter)
 app.use('/api/me', meRouter)
 app.use('/api/invites', inviteRouter)
+app.use('/api/announcements', announcementRouter)
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 

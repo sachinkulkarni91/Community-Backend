@@ -179,6 +179,42 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 ---
 
+## 📢 Announcements APIs (`/api/announcements`)
+
+| Method | Endpoint | Description | Auth | Admin |
+|--------|----------|-------------|------|-------|
+| GET | `/api/announcements` | Get all announcements (returns array of `{ header, subcontent }`) | ❌ | ❌ |
+| POST | `/api/announcements` | Create new announcement (send `{ header, subcontent }`) | ✅ | ✅ |
+| DELETE | `/api/announcements/:id` | Delete announcement | ✅ | ✅ |
+
+### Request/Response Examples
+
+#### Get Announcements
+```javascript
+GET /api/announcements
+[
+  {
+    "header": "👋 Welcome to the ServiceNow COEI Leaders Community!",
+    "subcontent": "We’re excited to bring together visionary leaders driving ServiceNow excellence and innovation across industries."
+  },
+  {
+    "header": "📅 Mark your calendars! Join us at Knowledge 2025, where COEI leaders will converge to showcase impact, explore new capabilities, and shape the future of work.",
+    "subcontent": ""
+  }
+]
+```
+
+#### Create Announcement
+```javascript
+POST /api/announcements
+{
+  "header": "👋 Welcome to the ServiceNow COEI Leaders Community!",
+  "subcontent": "We’re excited to bring together visionary leaders driving ServiceNow excellence and innovation across industries."
+}
+```
+
+---
+
 ## 📊 Query Parameters
 
 ### Events API Query Parameters
@@ -306,5 +342,6 @@ The server also supports WebSocket connections for real-time features like messa
 - Events: 11 endpoints
 - Invites: 5 endpoints
 - Messages: 2 endpoints
+- Announcements: 3 endpoints
 - Health: 3 endpoints
 - Other: 5+ endpoints
